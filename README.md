@@ -1,6 +1,8 @@
 # navigation-panel
 
-Document outline and navigation panel. Navigate through custom section markers in text editors with tree view, filtering, and folding support.
+Document outline and navigation panel.
+
+Navigate through custom section markers in text editors with tree view, filtering, and folding support.
 
 ## Features
 
