@@ -1,0 +1,101 @@
+{
+  "context-menu": {
+    ".navigation-block": [
+      {
+        "label": "Copy Text",
+        "command": "navigation-panel:copy-header-text"
+      },
+      {
+        "type": "separator"
+      }
+    ],
+    ".navigation-panel": [
+      {
+        "label": "All Categories",
+        "command": "navigation-panel:all-categories"
+      },
+      {
+        "label": "None Categories",
+        "command": "navigation-panel:none-categories"
+      },
+      {
+        "label": "Categories Toggle",
+        "command": "navigation-panel:categories-toggle"
+      },
+      {
+        "label": "Info Toggle",
+        "command": "navigation-panel:info-toggle"
+      },
+      {
+        "label": "Success Toggle",
+        "command": "navigation-panel:success-toggle"
+      },
+      {
+        "label": "Warning Toggle",
+        "command": "navigation-panel:warning-toggle"
+      },
+      {
+        "label": "Error Toggle",
+        "command": "navigation-panel:error-toggle"
+      },
+      {
+        "label": "Standard Toggle",
+        "command": "navigation-panel:standard-toggle"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Collapse Mode",
+        "command": "navigation-panel:collapse-mode"
+      },
+      {
+        "label": "Expand Mode",
+        "command": "navigation-panel:expand-mode"
+      },
+      {
+        "label": "Auto Collapse",
+        "command": "navigation-panel:auto-collapse"
+      },
+      {
+        "label": "Focus Current",
+        "command": "navigation-panel:focus-current"
+      },
+      {
+        "type": "separator"
+      },
+      {
+        "label": "Text Wrap Toggle",
+        "command": "navigation-panel:text-wrap-toggle"
+      },
+      {
+        "label": "Search Bar Toggle",
+        "command": "navigation-panel:search-bar-toggle"
+      },
+      {
+        "label": "Category Bar Toggle",
+        "command": "navigation-panel:category-bar-toggle"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Navigation Panel",
+          "submenu": [
+            { "label": "Open", "command": "navigation-panel:open" },
+            { "label": "Open and Split Down", "command": "navigation-panel:open-and-split-down" },
+            { "label": "Toggle", "command": "navigation-panel:toggle" },
+            { "label": "List Headers", "command": "navigation-panel:list" },
+            { "label": "Hide", "command": "navigation-panel:hide" },
+            { "type": "separator" },
+            { "label": "Next Header", "command": "navigation-panel:next-header" },
+            { "label": "Previous Header", "command": "navigation-panel:previous-header" }
+          ]
+        }
+      ]
+    }
+  ]
+}
