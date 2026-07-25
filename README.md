@@ -11,7 +11,7 @@ Navigate through custom section markers in text editors with tree view, filterin
 - **Category markers**: tag headers as info, success, warning, or error.
 - **Section folding**: fold/unfold sections and view as table of contents.
 - **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over.
-- **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation-adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jove-view](https://github.com/lumine-code/jove-view).
+- **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation-adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
 
 ## Installation
 
@@ -168,7 +168,7 @@ Global regular expression is `(?:^(#+) +(.+?) *$|^ *(.+?) *: *$)`. The level is 
 
 ### Python
 
-Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jove-repl](https://github.com/lumine-code/jove-repl) cells. The scanner runs on Python, IPython (`.ipy`) and Cython sources.
+Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jupyter-repl](https://github.com/lumine-code/jupyter-repl) cells. The scanner runs on Python, IPython (`.ipy`) and Cython sources.
 
 Additional letter can be used to provide additional parse effect:
 
@@ -311,9 +311,9 @@ Additional letter can be used to provide additional visual effect:
 
 [image-editor](https://github.com/lumine-code/image-editor) provides its folder file list via the `navigation-adapter` service.
 
-### jove-view
+### jupyter-view
 
-[jove-view](https://github.com/lumine-code/jove-view) provides markdown cell headings via the `navigation-adapter` service. Clicking a heading activates the corresponding cell and scrolls to it.
+[jupyter-view](https://github.com/lumine-code/jupyter-view) provides markdown cell headings via the `navigation-adapter` service. Clicking a heading activates the corresponding cell and scrolls to it.
 
 ## Adapter API
 
