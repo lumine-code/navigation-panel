@@ -212,22 +212,22 @@
 }
 
 atom-text-editor {
+  --navigation-marker-color: rgb(233, 228, 141);
+  --navigation-marker-1-color: rgb(197, 218, 131);
+  --navigation-marker-2-color: rgb(250, 192, 209);
+  --navigation-marker-3-color: rgb(200, 197, 243);
+  --navigation-marker-opacity: 20%;
+
   .navigation-marker {
-    background: color-mix(in srgb, var(--background-color-selected) 20%, transparent);
+    background: color-mix(in srgb, var(--navigation-marker-color) var(--navigation-marker-opacity), transparent);
   }
   .navigation-marker-1 {
-    background: color-mix(in srgb, var(--ui-site-color-1) 20%, transparent);
+    background: color-mix(in srgb, var(--navigation-marker-1-color) var(--navigation-marker-opacity), transparent);
   }
   .navigation-marker-2 {
-    background: color-mix(in srgb, var(--ui-site-color-2) 20%, transparent);
+    background: color-mix(in srgb, var(--navigation-marker-2-color) var(--navigation-marker-opacity), transparent);
   }
   .navigation-marker-3 {
-    background: color-mix(in srgb, var(--ui-site-color-3) 20%, transparent);
-  }
-  .navigation-marker-4 {
-    background: color-mix(in srgb, var(--ui-site-color-4) 20%, transparent);
-  }
-  .navigation-marker-5 {
-    background: color-mix(in srgb, var(--ui-site-color-5) 20%, transparent);
+    background: color-mix(in srgb, var(--navigation-marker-3-color) var(--navigation-marker-opacity), transparent);
   }
 }

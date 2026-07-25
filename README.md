@@ -368,20 +368,13 @@ The panel augments the tree with navigation callbacks and default display state,
 
 The style can be adjusted according to user preferences in the `styles.less` file:
 
-- e.g. all markers have highlighted background, but only level 1, 2 and 3 have their own color:
+- e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the scrollmap-navigation layer shares the same palette:
 
   ```less
-  .navigation-marker {
-    background: rgba(233, 228, 141, 0.3);
-  }
-  .navigation-marker-3 {
-    background: rgba(200, 197, 243, 0.3);
-  }
-  .navigation-marker-2 {
-    background: rgba(250, 192, 209, 0.3);
-  }
-  .navigation-marker-1 {
-    background: rgba(197, 218, 131, 0.3);
+  atom-text-editor {
+    --navigation-marker-color: rgb(233, 228, 141);
+    --navigation-marker-1-color: rgb(131, 197, 218);
+    --navigation-marker-opacity: 30%;
   }
   ```
 
