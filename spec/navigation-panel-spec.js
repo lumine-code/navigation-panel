@@ -146,6 +146,47 @@ describe("navigation-panel", () => {
     });
   });
 
+  describe("built-in python scanner", () => {
+    // The IPython grammar is a dialect of python with its own scope, so it has
+    // to be mapped to the python scanner explicitly — scanner lookup is an
+    // exact scope match, not a selector.
+    it("scans editors using the IPython grammar", async () => {
+      const { getTextEditorHeaders } = require("../lib/editor-adapter");
+      await atom.packages.activatePackage("language-python");
+      const grammar = atom.grammars.grammarForScopeName("source.python.ipy");
+      expect(grammar).toBeTruthy();
+
+      const editor = await atom.workspace.open();
+      editor.setGrammar(grammar);
+      editor.setText(
+        [
+          "%matplotlib inline",
+          "#$# Setup",
+          "import numpy",
+          "#$$# Load",
+          "!pip install pandas",
+        ].join("\n"),
+      );
+
+      const headers = getTextEditorHeaders(editor);
+      expect(headers.length).toBe(1);
+      expect(headers[0].text).toBe("Setup");
+      expect(headers[0].children.map((header) => header.text)).toEqual(["Load"]);
+    });
+
+    it("returns no headers when the python scanner is disabled", async () => {
+      const { getTextEditorHeaders } = require("../lib/editor-adapter");
+      await atom.packages.activatePackage("language-python");
+      atom.config.set("navigation-panel.scanners.python", false);
+
+      const editor = await atom.workspace.open();
+      editor.setGrammar(atom.grammars.grammarForScopeName("source.python.ipy"));
+      editor.setText("#$# Setup");
+
+      expect(getTextEditorHeaders(editor)).toBeNull();
+    });
+  });
+
   describe("provided navigation-panel service", () => {
     it("exposes the outline reading API and notifies on updates", async () => {
       const service = mainModule.serviceProvider();

@@ -168,7 +168,7 @@ Global regular expression is `(?:^(#+) +(.+?) *$|^ *(.+?) *: *$)`. The level is 
 
 ### Python
 
-Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jove-repl](https://github.com/lumine-code/jove-repl) cells.
+Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jove-repl](https://github.com/lumine-code/jove-repl) cells. The scanner runs on Python, IPython (`.ipy`) and Cython sources.
 
 Additional letter can be used to provide additional parse effect:
 
