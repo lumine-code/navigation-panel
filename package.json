@@ -7,20 +7,12 @@
     "url": "https://github.com/lumine-code/navigation-panel/issues"
   },
   "keywords": [
-    "navigation",
     "outline",
     "section",
+    "toc",
+    "folding",
     "marker",
-    "bookmark",
-    "ASCII",
-    "BibTex",
-    "LaTeX",
-    "Markdown",
-    "Python",
-    "ReStructured",
-    "SOFiSTiK",
-    "Sinumerik",
-    "Typst"
+    "bookmark"
   ],
   "version": "1.0.0",
   "license": "MIT",
