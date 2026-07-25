@@ -22,7 +22,7 @@
     "Sinumerik",
     "Typst"
   ],
-  "version": "3.0.0",
+  "version": "1.0.0",
   "license": "MIT",
   "engines": {
     "atom": ">=1.100.0 <2.0.0"
@@ -49,14 +49,14 @@
   "providedServices": {
     "navigation-panel": {
       "versions": {
-        "0.0.1": "serviceProvider"
+        "1.0.0": "serviceProvider"
       }
     }
   },
   "consumedServices": {
     "navigation-adapter": {
       "versions": {
-        "1.0.0": "consumeNavigationAdapter"
+        "^1.0.0": "consumeNavigationAdapter"
       }
     }
   },
