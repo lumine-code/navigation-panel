@@ -39,14 +39,14 @@
     "prettier": "^3.9.6"
   },
   "providedServices": {
-    "navigation-panel": {
+    "navigation.headers": {
       "versions": {
-        "1.0.0": "serviceProvider"
+        "1.0.0": "provideNavigationHeaders"
       }
     }
   },
   "consumedServices": {
-    "navigation-adapter": {
+    "navigation.adapter": {
       "versions": {
         "^1.0.0": "consumeNavigationAdapter"
       }

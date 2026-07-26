@@ -189,7 +189,7 @@ describe("navigation-panel", () => {
 
   describe("provided navigation-panel service", () => {
     it("exposes the outline reading API and notifies on updates", async () => {
-      const service = mainModule.serviceProvider();
+      const service = mainModule.provideNavigationHeaders();
       expect(typeof service.getEditor).toBe("function");
       expect(typeof service.getFlattenHeaders).toBe("function");
       expect(typeof service.onDidUpdateHeaders).toBe("function");

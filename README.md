@@ -11,7 +11,7 @@ Navigate through custom section markers in text editors with tree view, filterin
 - **Category markers**: tag headers as info, success, warning, or error.
 - **Section folding**: fold/unfold sections and view as table of contents.
 - **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over.
-- **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation-adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
+- **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation.adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
 
 ## Installation
 
@@ -305,26 +305,26 @@ Additional letter can be used to provide additional visual effect:
 
 ### pdf-view
 
-[pdf-view](https://github.com/lumine-code/pdf-view) provides its document outline via the `navigation-adapter` service. You can search the entire outline tree instead of the built-in PDFjs outline. A section number filter and scroll-position tracking are supported. Configure the filter in pdf-view settings (`snoFilter`).
+[pdf-view](https://github.com/lumine-code/pdf-view) provides its document outline via the `navigation.adapter` service. You can search the entire outline tree instead of the built-in PDFjs outline. A section number filter and scroll-position tracking are supported. Configure the filter in pdf-view settings (`snoFilter`).
 
 ### image-editor
 
-[image-editor](https://github.com/lumine-code/image-editor) provides its folder file list via the `navigation-adapter` service.
+[image-editor](https://github.com/lumine-code/image-editor) provides its folder file list via the `navigation.adapter` service.
 
 ### jupyter-view
 
-[jupyter-view](https://github.com/lumine-code/jupyter-view) provides markdown cell headings via the `navigation-adapter` service. Clicking a heading activates the corresponding cell and scrolls to it.
+[jupyter-view](https://github.com/lumine-code/jupyter-view) provides markdown cell headings via the `navigation.adapter` service. Clicking a heading activates the corresponding cell and scrolls to it.
 
 ## Adapter API
 
-External packages provide navigation headers for any pane item type through the `navigation-adapter` service. When an adapter is registered and its `handlesItem` returns true for the active pane item, the panel displays headers provided by the adapter instead of running a built-in scanner.
+External packages provide navigation headers for any pane item type through the `navigation.adapter` service. When an adapter is registered and its `handlesItem` returns true for the active pane item, the panel displays headers provided by the adapter instead of running a built-in scanner.
 
 In your `package.json`:
 
 ```json
 {
   "providedServices": {
-    "navigation-adapter": {
+    "navigation.adapter": {
       "versions": {
         "1.0.0": "provideNavigationAdapter"
       }
@@ -403,8 +403,8 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **navigation-panel** (`1.0.0`): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
-- **navigation-adapter** (`^1.0.0`): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
+- **navigation.headers** (`1.0.0`): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
+- **navigation.adapter** (`^1.0.0`): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
 
 ## Contributing
 
