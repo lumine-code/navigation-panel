@@ -69,7 +69,7 @@ describe("navigation-panel", () => {
     return { fakeItem, headers, adapter, navigateTo };
   }
 
-  describe("navigation-adapter consumption", () => {
+  describe("navigation.adapter consumption", () => {
     it("renders outline entries provided by an adapter", async () => {
       const { fakeItem, adapter } = createFakeAdapterSetup();
       mainModule.consumeNavigationAdapter(adapter);
