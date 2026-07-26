@@ -403,8 +403,8 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 ## Services
 
-- **navigation.headers** (`1.0.0`): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
-- **navigation.adapter** (`^1.0.0`): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
+- **[navigation.headers](docs/navigation.headers.md)** (`1.0.0`): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
+- **[navigation.adapter](docs/navigation.adapter.md)** (`^1.0.0`): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
 
 ## Contributing
 
