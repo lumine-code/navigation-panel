@@ -368,7 +368,7 @@ The panel augments the tree with navigation callbacks and default display state,
 
 The style can be adjusted according to user preferences in the `styles.less` file:
 
-- e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the scrollmap-navigation layer shares the same palette:
+- e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the marker-navigation layer shares the same palette:
 
   ```less
   atom-text-editor {
