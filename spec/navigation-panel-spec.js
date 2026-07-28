@@ -241,6 +241,46 @@ describe("navigation-panel", () => {
       expect(visibleLabels()).toEqual(["Chapter Three"]);
     });
 
+    it("keeps the focused row when two headers share a buffer row", async () => {
+      const fakeItem = {
+        element: document.createElement("div"),
+        getTitle: () => "Two On One Line",
+      };
+      const headers = [
+        { text: "First", level: 1, classList: [], startPoint: { row: 0, column: 0 }, children: [] },
+        {
+          text: "Second",
+          level: 1,
+          classList: [],
+          startPoint: { row: 0, column: 20 },
+          children: [],
+        },
+      ];
+      mainModule.consumeNavigationAdapter({
+        handlesItem: (item) => item === fakeItem,
+        observeHeaders: (item, callback) => {
+          callback(headers, { instant: true });
+          return new Disposable(() => {});
+        },
+        navigateTo: jasmine.createSpy("navigateTo"),
+      });
+
+      const pane = atom.workspace.getCenter().getActivePane();
+      pane.addItem(fakeItem);
+      pane.activateItem(fakeItem);
+      await pollUntil(() => mainModule.headers && mainModule.headers.length === 2);
+
+      mainModule.list();
+      await settle();
+      activeSession().focusIndex(1);
+      expect(activeSession().getFocusedItem().text).toBe("Second");
+
+      mainModule.refreshHeaderList();
+      await settle();
+
+      expect(activeSession().getFocusedItem().text).toBe("Second");
+    });
+
     it("closes when the list command runs a second time", async () => {
       await openList();
       expect(activeSession()).not.toBe(null);
