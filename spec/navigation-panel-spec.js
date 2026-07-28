@@ -1,4 +1,19 @@
+const path = require("path");
 const { Disposable } = require("atom");
+
+// The shared modal vocabulary lives in the editor checkout, which sits at a
+// different relative depth in CI than it does in the workspace, so it is
+// resolved through the resource path rather than by counting `..`.
+const {
+  activeSession,
+  modalElement,
+  visibleLabels,
+  statusText,
+  emptyMessageText,
+  dispatch,
+  confirm,
+  settle,
+} = require(path.join(atom.getLoadSettings().resourcePath, "spec", "helpers", "modal-helpers"));
 
 // The spec runner freezes setTimeout, so etch renders are awaited by polling
 // on animation frames instead of timers.
@@ -126,6 +141,113 @@ describe("navigation-panel", () => {
       pane.activateItem(plainItem);
 
       expect(mainModule.headers).toBeNull();
+    });
+  });
+
+  describe("the header list modal", () => {
+    async function openList() {
+      const { fakeItem, adapter, navigateTo } = createFakeAdapterSetup();
+      mainModule.consumeNavigationAdapter(adapter);
+
+      const pane = atom.workspace.getCenter().getActivePane();
+      pane.addItem(fakeItem);
+      pane.activateItem(fakeItem);
+      await pollUntil(() => mainModule.headers && mainModule.headers.length === 2);
+
+      mainModule.list();
+      await settle();
+      return { fakeItem, navigateTo };
+    }
+
+    afterEach(() => {
+      const session = activeSession();
+      if (session) session.cancel("api");
+    });
+
+    it("lists every visible header by breadcrumb path and buffer line", async () => {
+      await openList();
+
+      expect(modalElement().dataset.modalView).toBe("navigation-panel.headers");
+      expect(visibleLabels()).toEqual(["Chapter One", "Chapter One > Section A", "Chapter Two"]);
+      const details = Array.from(modalElement().querySelectorAll(".secondary-line")).map(
+        (line) => line.textContent,
+      );
+      expect(details).toEqual(["Line 1", "Line 3", "Line 6"]);
+    });
+
+    it("navigates to the focused header and closes on confirm", async () => {
+      const { fakeItem, navigateTo } = await openList();
+
+      confirm();
+      await settle();
+
+      const [calledItem, calledHeader, options] = navigateTo.calls.mostRecent().args;
+      expect(calledItem).toBe(fakeItem);
+      // The adapter is handed the real header, not the breadcrumbed list copy.
+      expect(calledHeader.text).toBe("Chapter One");
+      expect(options).toEqual({});
+      expect(activeSession()).toBe(null);
+    });
+
+    it("scrolls to the focused header without stealing focus or closing", async () => {
+      const { navigateTo } = await openList();
+
+      dispatch("modals:scroll");
+      await settle();
+
+      const [, calledHeader, options] = navigateTo.calls.mostRecent().args;
+      expect(calledHeader.text).toBe("Chapter One");
+      expect(options).toEqual({ focus: false });
+      expect(activeSession()).not.toBe(null);
+    });
+
+    it("binds alt-enter to the scroll action while the list is open", async () => {
+      await openList();
+
+      const bindings = atom.keymaps.findKeyBindings({
+        target: modalElement(),
+        keystrokes: "alt-enter",
+      });
+      expect(bindings.map((binding) => binding.command)).toContain("modals:scroll");
+    });
+
+    it("says the grammar is unsupported rather than only showing an empty list", async () => {
+      const pane = atom.workspace.getCenter().getActivePane();
+      const plainItem = {
+        element: document.createElement("div"),
+        getTitle: () => "Plain",
+      };
+      pane.addItem(plainItem);
+      pane.activateItem(plainItem);
+      expect(mainModule.headers).toBeNull();
+
+      mainModule.list();
+      await settle();
+
+      expect(visibleLabels()).toEqual([]);
+      expect(emptyMessageText()).toBe("No headers found");
+      expect(statusText()).toBe("This grammar is not supported");
+    });
+
+    it("re-reads the headers while the list is open", async () => {
+      await openList();
+      expect(visibleLabels().length).toBe(3);
+
+      mainModule.updateAdapterHeaders([
+        { text: "Chapter Three", level: 1, classList: [], startPoint: { row: 9 }, children: [] },
+      ]);
+      await settle();
+
+      expect(visibleLabels()).toEqual(["Chapter Three"]);
+    });
+
+    it("closes when the list command runs a second time", async () => {
+      await openList();
+      expect(activeSession()).not.toBe(null);
+
+      mainModule.list();
+
+      expect(activeSession()).toBe(null);
     });
   });
 

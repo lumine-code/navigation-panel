@@ -68,9 +68,9 @@ Commands available in `.navigation-panel`:
 - `navigation-panel:search-bar-toggle`: toggle the search bar,
 - `navigation-panel:category-bar-toggle`: toggle the category bar.
 
-Commands available in `.navigation-panel-list`:
+Commands available in `atom-modal[data-modal-view="navigation-panel.headers"]`:
 
-- `select-list:scroll`: scroll to selected header.
+- `modals:scroll`: scroll to the selected header without closing the list.
 
 ## Sections panel
 
