@@ -19,6 +19,9 @@
   "engines": {
     "atom": ">=1.100.0 <2.0.0"
   },
+  "backgroundTips": [
+    "You can jump between the sections of the current document with {{ 'navigation-panel:toggle-focus' | keystroke }}"
+  ],
   "main": "./lib/main",
   "scripts": {
     "test": "lumine --test spec",
