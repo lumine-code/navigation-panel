@@ -18,6 +18,6 @@
     "ctrl-enter": "navigation-panel:open-selected-header-add-cursor"
   },
   ".navigation-panel-list atom-text-editor[mini]": {
-    "alt-enter": "select-list:scroll"
+    "alt-enter": "navigation-panel:scroll"
   }
 }

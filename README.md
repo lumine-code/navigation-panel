@@ -70,7 +70,7 @@ Commands available in `.navigation-panel`:
 
 Commands available in `.navigation-panel-list`:
 
-- `select-list:scroll`: scroll to selected header.
+- `navigation-panel:scroll`: scroll to selected header.
 
 ## Sections panel
 
