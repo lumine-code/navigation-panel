@@ -73,9 +73,16 @@
           display: flex;
           align-items: center;
 
+          /* Octicon classes bring a 16px box, but the glyph is scaled down to
+             the panel's own font here, so its line box filled only the top of
+             that box and the ink sat high. Size the box to the glyph's em
+             instead: the ink centres inside it, and the flex row centres the
+             box. */
           &:before {
             font-size: 1em;
             width: 100%;
+            height: 1em;
+            line-height: 1em;
             text-align: center;
             margin: 0;
           }
