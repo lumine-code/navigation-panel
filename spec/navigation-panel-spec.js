@@ -220,4 +220,34 @@ describe("navigation-panel", () => {
       adapterDisposable.dispose();
     });
   });
+
+  describe("list auto-scroll", () => {
+    const { NavigationTree } = require("../lib/navi-tree");
+    let tree;
+
+    afterEach(() => {
+      if (tree) {
+        tree.destroy();
+        tree = null;
+      }
+    });
+
+    // Updates arrive faster than the animation runs: an adapter that reports the
+    // viewport asynchronously can put a stale header on screen for one update and
+    // the right one on the next. The second request finds its target already in
+    // view and asks for no movement, so it has to stop the animation the stale
+    // one started — otherwise the list keeps travelling to the stale header and
+    // settles there, which is exactly what the pdf outline did.
+    it("stops an in-flight animation when the next target is already in view", () => {
+      tree = new NavigationTree();
+      tree.refs.navigationScroller = { clientHeight: 100, scrollTop: 0 };
+
+      tree.scrollToElement({ offsetTop: 500 });
+      expect(tree.scrollAnimationID).not.toBeNull();
+
+      tree.scrollToElement({ offsetTop: 40 });
+      expect(tree.scrollAnimationID).toBeNull();
+      expect(tree.pendingScroll).toBe(0);
+    });
+  });
 });
