@@ -1,9 +1,15 @@
+const path = require("path");
+
+// Activate by path: resolving by name would need this checkout linked into
+// ~/.lumine/packages-dev first.
+const packageRoot = path.join(__dirname, "..");
+
 describe("navigation-panel item actions", () => {
   let list;
 
   beforeEach(async () => {
     jasmine.attachToDOM(atom.views.getView(atom.workspace));
-    const pkg = await atom.packages.activatePackage("navigation-panel");
+    const pkg = await atom.packages.activatePackage(packageRoot);
     list = pkg.mainModule.navigationList;
   });
 

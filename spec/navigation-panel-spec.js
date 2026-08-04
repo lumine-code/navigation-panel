@@ -1,4 +1,9 @@
+const path = require("path");
 const { Disposable } = require("atom");
+
+// Activate by path: resolving by name would need this checkout linked into
+// ~/.lumine/packages-dev first.
+const packageRoot = path.join(__dirname, "..");
 
 // The spec runner freezes setTimeout, so etch renders are awaited by polling
 // on animation frames instead of timers.
@@ -24,7 +29,7 @@ describe("navigation-panel", () => {
   beforeEach(async () => {
     workspaceElement = atom.views.getView(atom.workspace);
     jasmine.attachToDOM(workspaceElement);
-    const pkg = await atom.packages.activatePackage("navigation-panel");
+    const pkg = await atom.packages.activatePackage(packageRoot);
     mainModule = pkg.mainModule;
   });
 
