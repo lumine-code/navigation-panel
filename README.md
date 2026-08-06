@@ -366,11 +366,11 @@ The panel augments the tree with navigation callbacks and default display state,
 
 ## Customization
 
-The style can be adjusted according to user preferences in the `styles.less` file:
+The style can be adjusted according to user preferences in the `styles.css` file:
 
 - e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the marker-navigation layer shares the same palette:
 
-  ```less
+  ```css
   atom-text-editor {
     --navigation-marker-color: rgb(233, 228, 141);
     --navigation-marker-1-color: rgb(131, 197, 218);
@@ -380,7 +380,7 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 - e.g. add top border to markers with level 1:
 
-  ```less
+  ```css
   .navigation-marker-1 {
     border-top: 0.016px solid var(--text-color-info);
   }
@@ -388,14 +388,14 @@ The style can be adjusted according to user preferences in the `styles.less` fil
 
 - e.g. change font to monospace:
 
-  ```less
+  ```css
   .navigation-panel {
     font-family: monospace;
   }
   ```
 
 - e.g. change style of visible headers:
-  ```less
+  ```css
   .navigation-panel .visible {
     background: color-mix(in srgb, green 5%, transparent);
   }

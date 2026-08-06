@@ -139,7 +139,7 @@
       "properties": {
         "markLines": {
           "title": "Mark section lines",
-          "description": "Decorate section lines in the gutter or text. Style can be customized in `styles.less`. Restart needed.",
+          "description": "Decorate section lines in the gutter or text. Style can be customized in `styles.css`. Restart needed.",
           "type": "boolean",
           "default": true
         },
