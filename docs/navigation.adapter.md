@@ -58,7 +58,7 @@ A header needs `text`, `level`, and `children` (use `[]` for a leaf). `currentCo
 ## Minimal example
 
 ```js
-const { Disposable } = require("atom");
+const { Disposable } = require("lumine");
 
 module.exports = {
   provideNavigationAdapter() {

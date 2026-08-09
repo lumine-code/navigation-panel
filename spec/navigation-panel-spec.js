@@ -1,5 +1,5 @@
 const path = require("path");
-const { Disposable } = require("atom");
+const { Disposable } = require("lumine");
 
 // Activate by path: resolving by name would need this checkout linked into
 // ~/.lumine/packages-dev first.
@@ -27,9 +27,9 @@ describe("navigation-panel", () => {
   let workspaceElement, mainModule;
 
   beforeEach(async () => {
-    workspaceElement = atom.views.getView(atom.workspace);
+    workspaceElement = lumine.views.getView(lumine.workspace);
     jasmine.attachToDOM(workspaceElement);
-    const pkg = await atom.packages.activatePackage(packageRoot);
+    const pkg = await lumine.packages.activatePackage(packageRoot);
     mainModule = pkg.mainModule;
   });
 
@@ -79,7 +79,7 @@ describe("navigation-panel", () => {
       const { fakeItem, adapter } = createFakeAdapterSetup();
       mainModule.consumeNavigationAdapter(adapter);
 
-      const pane = atom.workspace.getCenter().getActivePane();
+      const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(fakeItem);
       pane.activateItem(fakeItem);
 
@@ -97,7 +97,7 @@ describe("navigation-panel", () => {
       const { fakeItem, adapter, navigateTo } = createFakeAdapterSetup();
       mainModule.consumeNavigationAdapter(adapter);
 
-      const pane = atom.workspace.getCenter().getActivePane();
+      const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(fakeItem);
       pane.activateItem(fakeItem);
 
@@ -118,7 +118,7 @@ describe("navigation-panel", () => {
       const { fakeItem, adapter } = createFakeAdapterSetup();
       mainModule.consumeNavigationAdapter(adapter);
 
-      const pane = atom.workspace.getCenter().getActivePane();
+      const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(fakeItem);
       pane.activateItem(fakeItem);
       await pollUntil(() => mainModule.headers && mainModule.headers.length === 2);
@@ -137,7 +137,7 @@ describe("navigation-panel", () => {
   describe("built-in markdown scanner", () => {
     it("builds a nested header tree from markdown text", async () => {
       const { ScannerMarkdown } = require("../lib/scanner-markdown");
-      const editor = await atom.workspace.open();
+      const editor = await lumine.workspace.open();
       editor.setText("# One\n\ntext\n\n## Sub\n\n```\n# not a header\n```\n\n# Two\n");
 
       const scanner = new ScannerMarkdown(editor);
@@ -157,11 +157,11 @@ describe("navigation-panel", () => {
     // exact scope match, not a selector.
     it("scans editors using the IPython grammar", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await atom.packages.activatePackage("language-python");
-      const grammar = atom.grammars.grammarForScopeName("source.python.ipy");
+      await lumine.packages.activatePackage("language-python");
+      const grammar = lumine.grammars.grammarForScopeName("source.python.ipy");
       expect(grammar).toBeTruthy();
 
-      const editor = await atom.workspace.open();
+      const editor = await lumine.workspace.open();
       editor.setGrammar(grammar);
       editor.setText(
         [
@@ -181,11 +181,11 @@ describe("navigation-panel", () => {
 
     it("returns no headers when the python scanner is disabled", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await atom.packages.activatePackage("language-python");
-      atom.config.set("navigation-panel.scanners.python", false);
+      await lumine.packages.activatePackage("language-python");
+      lumine.config.set("navigation-panel.scanners.python", false);
 
-      const editor = await atom.workspace.open();
-      editor.setGrammar(atom.grammars.grammarForScopeName("source.python.ipy"));
+      const editor = await lumine.workspace.open();
+      editor.setGrammar(lumine.grammars.grammarForScopeName("source.python.ipy"));
       editor.setText("#$# Setup");
 
       expect(getTextEditorHeaders(editor)).toBeNull();
@@ -207,7 +207,7 @@ describe("navigation-panel", () => {
 
       const { fakeItem, adapter } = createFakeAdapterSetup();
       const adapterDisposable = mainModule.consumeNavigationAdapter(adapter);
-      const pane = atom.workspace.getCenter().getActivePane();
+      const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(fakeItem);
       pane.activateItem(fakeItem);
 

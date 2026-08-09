@@ -19,7 +19,7 @@ To install `navigation-panel` search for _navigation-panel_ in the Install pane 
 
 ## Commands
 
-Commands available in `atom-workspace`:
+Commands available in `lumine-workspace`:
 
 - `navigation-panel:open`: open navigation panel,
 - `navigation-panel:open-and-split-down`: open navigation panel in split down,
@@ -371,7 +371,7 @@ The style can be adjusted according to user preferences in the `styles.css` file
 - e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the marker-navigation layer shares the same palette:
 
   ```css
-  atom-text-editor {
+  lumine-text-editor {
     --navigation-marker-color: rgb(233, 228, 141);
     --navigation-marker-1-color: rgb(131, 197, 218);
     --navigation-marker-opacity: 30%;

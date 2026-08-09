@@ -1,5 +1,5 @@
 {
-  "atom-workspace": {
+  "lumine-workspace": {
     "alt-n": "navigation-panel:toggle-focus"
   },
   ".navigation-search": {
@@ -17,7 +17,7 @@
     "alt-enter": "navigation-panel:open-selected-header-clear-search",
     "ctrl-enter": "navigation-panel:open-selected-header-add-cursor"
   },
-  ".navigation-panel-list atom-text-editor[mini]": {
+  ".navigation-panel-list lumine-text-editor[mini]": {
     "alt-enter": "navigation-panel:scroll"
   }
 }

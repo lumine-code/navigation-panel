@@ -1,6 +1,6 @@
 /** @jsx etch.dom */
 const etch = require("@lumine-code/etch");
-const { CompositeDisposable, TextEditor } = require("atom");
+const { CompositeDisposable, TextEditor } = require("lumine");
 const { NavigationItem } = require("./navi-item");
 
 // it's required to ommit double scroll request
@@ -26,11 +26,11 @@ class NavigationTree {
     this.searchQuery = "";
     this.searchUpdateTimer = null;
 
-    this.searchBar = atom.config.get("navigation-panel.panel.searchBar");
-    this.categoryBar = atom.config.get("navigation-panel.panel.categoryBar");
-    this.visibility = atom.config.get("navigation-panel.panel.visibility");
+    this.searchBar = lumine.config.get("navigation-panel.panel.searchBar");
+    this.categoryBar = lumine.config.get("navigation-panel.panel.categoryBar");
+    this.visibility = lumine.config.get("navigation-panel.panel.visibility");
     this.collapseWork = null;
-    this.textWrap = atom.config.get("navigation-panel.panel.textWrap");
+    this.textWrap = lumine.config.get("navigation-panel.panel.textWrap");
     this.info = true;
     this.success = true;
     this.warning = true;
@@ -38,7 +38,7 @@ class NavigationTree {
     this.standard = true;
 
     this.disposables = new CompositeDisposable(
-      atom.commands.add("atom-workspace", {
+      lumine.commands.add("lumine-workspace", {
         "navigation-panel:all-categories": () => {
           this.categoriesChange(["info", "success", "warning", "error", "standard"], true);
         },
@@ -101,7 +101,7 @@ class NavigationTree {
           this.copyHeaderText(event.target);
         },
       }),
-      atom.commands.add(".navigation-panel", {
+      lumine.commands.add(".navigation-panel", {
         "navigation-panel:select-previous-header": () => {
           this.selectAdjacentHeader(-1);
         },
@@ -128,9 +128,9 @@ class NavigationTree {
         },
       }),
     );
-    etch.setScheduler(atom.views);
+    etch.setScheduler(lumine.views);
     etch.initialize(this);
-    this.disposables.add(atom.textEditors.add(this.refs.searchEditor));
+    this.disposables.add(lumine.textEditors.add(this.refs.searchEditor));
     this.disposables.add(
       this.refs.searchEditor.onDidChange(() => {
         this.searchQuery = this.refs.searchEditor.getText();
@@ -259,7 +259,7 @@ class NavigationTree {
       categoryBar = <div class="navigation-desk" />;
     }
     return (
-      <atom-panel
+      <lumine-panel
         class="navigation-panel"
         ref="navigationPanel"
         tabIndex={-1}
@@ -270,7 +270,7 @@ class NavigationTree {
           {naviList}
         </div>
         {categoryBar}
-      </atom-panel>
+      </lumine-panel>
     );
   }
 
@@ -643,7 +643,7 @@ class NavigationTree {
   }
 
   getDefaultLocation() {
-    return atom.config.get("navigation-panel.panel.defaultSide");
+    return lumine.config.get("navigation-panel.panel.defaultSide");
   }
 
   getAllowedLocations() {
@@ -660,7 +660,7 @@ class NavigationTree {
       this.searches = null;
       return;
     }
-    query = atom.tools.removeDiacritics(query);
+    query = lumine.tools.removeDiacritics(query);
     let scoredItems = [];
     this._filter(query, scoredItems, this.headers);
     this.searches = scoredItems.sort((a, b) => b.score - a.score);
@@ -668,11 +668,11 @@ class NavigationTree {
 
   _filter(query, items, headers) {
     for (let item of headers) {
-      let score = atom.tools.fuzzyMatcher.score(atom.tools.removeDiacritics(item.text), query);
+      let score = lumine.tools.fuzzyMatcher.score(lumine.tools.removeDiacritics(item.text), query);
       if (score > 0) {
         let matches =
           query.length > 0
-            ? atom.tools.fuzzyMatcher.match(atom.tools.removeDiacritics(item.text), query, {
+            ? lumine.tools.fuzzyMatcher.match(lumine.tools.removeDiacritics(item.text), query, {
                 recordMatchIndexes: true,
               }).matchIndexes
             : [];
@@ -753,8 +753,8 @@ class NavigationTree {
     if (!view || !view.item) {
       return;
     }
-    atom.clipboard.write(view.item.text);
-    atom.notifications.addSuccess("Copied to clipboard!");
+    lumine.clipboard.write(view.item.text);
+    lumine.notifications.addSuccess("Copied to clipboard!");
   }
 
   clearSearchAfterNavigate() {

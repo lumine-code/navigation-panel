@@ -10,7 +10,7 @@
     position: relative;
     margin: 0.375em;
 
-    atom-text-editor {
+    lumine-text-editor {
       font-size: var(--font-size);
     }
 
@@ -218,7 +218,7 @@
   }
 }
 
-atom-text-editor {
+lumine-text-editor {
   --navigation-marker-color: rgb(233, 228, 141);
   --navigation-marker-1-color: rgb(197, 218, 131);
   --navigation-marker-2-color: rgb(250, 192, 209);

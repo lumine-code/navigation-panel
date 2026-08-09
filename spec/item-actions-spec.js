@@ -8,13 +8,13 @@ describe("navigation-panel item actions", () => {
   let list;
 
   beforeEach(async () => {
-    jasmine.attachToDOM(atom.views.getView(atom.workspace));
-    const pkg = await atom.packages.activatePackage(packageRoot);
+    jasmine.attachToDOM(lumine.views.getView(lumine.workspace));
+    const pkg = await lumine.packages.activatePackage(packageRoot);
     list = pkg.mainModule.navigationList;
   });
 
   afterEach(async () => {
-    await atom.packages.deactivatePackage("navigation-panel");
+    await lumine.packages.deactivatePackage("navigation-panel");
   });
 
   it("derives its action from the command registration and the keymap", () => {
@@ -35,7 +35,7 @@ describe("navigation-panel item actions", () => {
     await list.selectList.showItemActions();
 
     expect(list.selectList.itemActionsList.isVisible()).toBeTruthy();
-    expect(atom.workspace.getModalTrail()).toEqual(["Headers", "Actions"]);
+    expect(lumine.workspace.getModalTrail()).toEqual(["Headers", "Actions"]);
     // The actions list wears the package class, so the package keymap
     // resolves action keystrokes inside it too.
     expect(
