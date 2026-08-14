@@ -15,7 +15,7 @@ Navigate through custom section markers in text editors with tree view, filterin
 
 ## Installation
 
-To install `navigation-panel` search for _navigation-panel_ in the Install pane of the Lumine settings or run `lumine --install lumine-code/navigation-panel`.
+To install `navigation-panel` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/navigation-panel`.
 
 ## Commands
 
@@ -403,8 +403,8 @@ The style can be adjusted according to user preferences in the `styles.css` file
 
 ## Services
 
-- **[navigation.headers](docs/navigation.headers.md)** (`1.0.0`): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
-- **[navigation.adapter](docs/navigation.adapter.md)** (`^1.0.0`): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
+- [`navigation.headers`](docs/navigation.headers.md): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
+- [`navigation.adapter`](docs/navigation.adapter.md): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
 
 ## Contributing
 
