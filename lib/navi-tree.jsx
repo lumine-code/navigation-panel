@@ -128,7 +128,6 @@ class NavigationTree {
         },
       }),
     );
-    etch.setScheduler(lumine.views);
     etch.initialize(this);
     this.disposables.add(lumine.textEditors.add(this.refs.searchEditor));
     this.disposables.add(
