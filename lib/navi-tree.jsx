@@ -39,92 +39,170 @@ class NavigationTree {
 
     this.disposables = new CompositeDisposable(
       lumine.commands.add("lumine-workspace", {
-        "navigation-panel:all-categories": () => {
-          this.categoriesChange(["info", "success", "warning", "error", "standard"], true);
+        "navigation-panel:all-categories": {
+          description: "Show the headers of every category in the panel.",
+          didDispatch: () => {
+            this.categoriesChange(["info", "success", "warning", "error", "standard"], true);
+          },
         },
-        "navigation-panel:none-categories": () => {
-          this.categoriesChange(["info", "success", "warning", "error", "standard"], false);
+        "navigation-panel:none-categories": {
+          description: "Hide the headers of every category from the panel.",
+          didDispatch: () => {
+            this.categoriesChange(["info", "success", "warning", "error", "standard"], false);
+          },
         },
-        "navigation-panel:categories-toggle": () => {
-          this.categoriesChange(["info", "success", "warning", "error", "standard"]);
+        "navigation-panel:categories-toggle": {
+          description: "Flip every category at once between shown and hidden.",
+          didDispatch: () => {
+            this.categoriesChange(["info", "success", "warning", "error", "standard"]);
+          },
         },
-        "navigation-panel:info-toggle": () => {
-          this.categoriesChange(["info"]);
+        "navigation-panel:info-toggle": {
+          description: "Show or hide the headers marked as information.",
+          didDispatch: () => {
+            this.categoriesChange(["info"]);
+          },
         },
-        "navigation-panel:success-toggle": () => {
-          this.categoriesChange(["success"]);
+        "navigation-panel:success-toggle": {
+          description: "Show or hide the headers marked as successes.",
+          didDispatch: () => {
+            this.categoriesChange(["success"]);
+          },
         },
-        "navigation-panel:warning-toggle": () => {
-          this.categoriesChange(["warning"]);
+        "navigation-panel:warning-toggle": {
+          description: "Show or hide the headers marked as warnings.",
+          didDispatch: () => {
+            this.categoriesChange(["warning"]);
+          },
         },
-        "navigation-panel:error-toggle": () => {
-          this.categoriesChange(["error"]);
+        "navigation-panel:error-toggle": {
+          description: "Show or hide the headers marked as errors.",
+          didDispatch: () => {
+            this.categoriesChange(["error"]);
+          },
         },
-        "navigation-panel:standard-toggle": () => {
-          this.categoriesChange(["standard"]);
+        "navigation-panel:standard-toggle": {
+          description: "Show or hide the headers carrying no category at all.",
+          didDispatch: () => {
+            this.categoriesChange(["standard"]);
+          },
         },
-        "navigation-panel:collapse-mode": () => {
-          this.visibility = this.collapseWork = 0;
-          etch.update(this);
+        "navigation-panel:collapse-mode": {
+          description: "Keep every section in the panel collapsed.",
+          didDispatch: () => {
+            this.visibility = this.collapseWork = 0;
+            etch.update(this);
+          },
         },
-        "navigation-panel:expand-mode": () => {
-          this.visibility = this.collapseWork = 1;
-          etch.update(this);
+        "navigation-panel:expand-mode": {
+          description: "Keep every section in the panel expanded.",
+          didDispatch: () => {
+            this.visibility = this.collapseWork = 1;
+            etch.update(this);
+          },
         },
-        "navigation-panel:auto-collapse": () => {
-          this.visibility = 2;
-          etch.update(this);
+        "navigation-panel:auto-collapse": {
+          description: "Collapse the sections the cursor is not in.",
+          didDispatch: () => {
+            this.visibility = 2;
+            etch.update(this);
+          },
         },
-        "navigation-panel:focus-current": () => {
-          this.collapseWork = 2;
-          etch.update(this);
+        "navigation-panel:focus-current": {
+          description: "Expand only the section the cursor is in.",
+          didDispatch: () => {
+            this.collapseWork = 2;
+            etch.update(this);
+          },
         },
-        "navigation-panel:text-wrap-toggle": () => {
-          this.textWrap = !this.textWrap;
-          etch.update(this);
+        "navigation-panel:text-wrap-toggle": {
+          description: "Wrap a long header in the panel rather than clipping it.",
+          didDispatch: () => {
+            this.textWrap = !this.textWrap;
+            etch.update(this);
+          },
         },
-        "navigation-panel:search-bar-toggle": () => {
-          this.searchBar = !this.searchBar;
-          etch.update(this);
+        "navigation-panel:search-bar-toggle": {
+          description: "Show or hide the panel's search field.",
+          didDispatch: () => {
+            this.searchBar = !this.searchBar;
+            etch.update(this);
+          },
         },
-        "navigation-panel:category-bar-toggle": () => {
-          this.categoryBar = !this.categoryBar;
-          etch.update(this);
+        "navigation-panel:category-bar-toggle": {
+          description: "Show or hide the panel's row of category filters.",
+          didDispatch: () => {
+            this.categoryBar = !this.categoryBar;
+            etch.update(this);
+          },
         },
-        "navigation-panel:search": () => {
-          this.focusSearch();
+        "navigation-panel:search": {
+          description: "Put the cursor in the panel's search field.",
+          didDispatch: () => {
+            this.focusSearch();
+          },
         },
-        "navigation-panel:clear": () => {
-          this.clearQuery({ scrollToSelection: true });
+        "navigation-panel:clear": {
+          description: "Empty the search field and scroll back to the selection.",
+          didDispatch: () => {
+            this.clearQuery({ scrollToSelection: true });
+          },
         },
-        "navigation-panel:copy-header-text": (event) => {
-          this.copyHeaderText(event.target);
+        "navigation-panel:copy-header-text": {
+          description: "Copy the text of the header under the pointer.",
+          didDispatch: (event) => {
+            this.copyHeaderText(event.target);
+          },
         },
       }),
       lumine.commands.add(".navigation-panel", {
-        "navigation-panel:select-previous-header": () => {
-          this.selectAdjacentHeader(-1);
+        "navigation-panel:select-previous-header": {
+          description: "Move the panel's selection to the header above.",
+          didDispatch: () => {
+            this.selectAdjacentHeader(-1);
+          },
         },
-        "navigation-panel:select-next-header": () => {
-          this.selectAdjacentHeader(1);
+        "navigation-panel:select-next-header": {
+          description: "Move the panel's selection to the header below.",
+          didDispatch: () => {
+            this.selectAdjacentHeader(1);
+          },
         },
-        "navigation-panel:open-selected-header": () => {
-          this.openSelectedHeader({ clearSearch: false });
+        "navigation-panel:open-selected-header": {
+          description: "Scroll the editor to the selected header, keeping the query.",
+          didDispatch: () => {
+            this.openSelectedHeader({ clearSearch: false });
+          },
         },
-        "navigation-panel:open-selected-header-clear-search": () => {
-          this.openSelectedHeader({ clearSearch: true });
+        "navigation-panel:open-selected-header-clear-search": {
+          description: "Scroll to the selected header and empty the search field.",
+          didDispatch: () => {
+            this.openSelectedHeader({ clearSearch: true });
+          },
         },
-        "navigation-panel:open-selected-header-add-cursor": () => {
-          this.openSelectedHeader({ addCursor: true });
+        "navigation-panel:open-selected-header-add-cursor": {
+          description: "Add a cursor at the selected header, keeping the others.",
+          didDispatch: () => {
+            this.openSelectedHeader({ addCursor: true });
+          },
         },
-        "navigation-panel:collapse-selected-header": () => {
-          this.setSelectedHeaderCollapsed(true);
+        "navigation-panel:collapse-selected-header": {
+          description: "Collapse the selected section in the panel.",
+          didDispatch: () => {
+            this.setSelectedHeaderCollapsed(true);
+          },
         },
-        "navigation-panel:expand-selected-header": () => {
-          this.setSelectedHeaderCollapsed(false);
+        "navigation-panel:expand-selected-header": {
+          description: "Expand the selected section in the panel.",
+          didDispatch: () => {
+            this.setSelectedHeaderCollapsed(false);
+          },
         },
-        "navigation-panel:toggle-search-focus": () => {
-          this.toggleSearchFocus();
+        "navigation-panel:toggle-search-focus": {
+          description: "Move focus between the search field and the header tree.",
+          didDispatch: () => {
+            this.toggleSearchFocus();
+          },
         },
       }),
     );
