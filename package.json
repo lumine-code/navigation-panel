@@ -53,6 +53,11 @@
       "versions": {
         "1.0.0": "provideNavigationHeaders"
       }
+    },
+    "marker.layer": {
+      "versions": {
+        "1.0.0": "provideMarkerLayer"
+      }
     }
   },
   "consumedServices": {
@@ -351,6 +356,34 @@
           "description": "Show tasklist headers as outline nodes in the navigation list.",
           "type": "boolean",
           "default": false
+        }
+      }
+    },
+    "marker": {
+      "title": "Marker",
+      "description": "Settings of the navigation layer drawn on the scrollbar and minimap by the marker hub.",
+      "type": "object",
+      "collapsed": true,
+      "properties": {
+        "enabled": {
+          "title": "Enabled",
+          "description": "Show navigation headers on the scrollbar and minimap.",
+          "type": "boolean",
+          "default": true
+        },
+        "maxDepth": {
+          "title": "Max depth",
+          "description": "Maximum header depth to display. Zero means no limit.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "threshold": {
+          "title": "Threshold",
+          "description": "Hide markers if count exceeds this value. Zero means no limit.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
         }
       }
     }

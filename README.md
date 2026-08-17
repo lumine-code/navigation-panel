@@ -10,6 +10,7 @@ Navigate through custom section markers in text editors with tree view, filterin
 - **Multi-level headers**: automatic level calculation for nested sections.
 - **Category markers**: tag headers as info, success, warning, or error.
 - **Section folding**: fold/unfold sections and view as table of contents.
+- **Scrollbar markers**: shows the document headers on the scrollbar and minimap via the marker hub.
 - **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over.
 - **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation.adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
 
@@ -368,7 +369,7 @@ The panel augments the tree with navigation callbacks and default display state,
 
 The style can be adjusted according to user preferences in the `styles.css` file:
 
-- e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the marker-navigation layer shares the same palette:
+- e.g. adjust the marker palette — levels 1, 2 and 3 have their own color, deeper levels use the base one, and the navigation layer on the scrollbar and minimap shares the same palette:
 
   ```css
   lumine-text-editor {
@@ -404,6 +405,7 @@ The style can be adjusted according to user preferences in the `styles.css` file
 ## Services
 
 - [`navigation.headers`](docs/navigation.headers.md): provided to let other packages read the current outline — exposes `getEditor()`, `getFlattenHeaders()`, `onDidUpdateHeaders(callback)`, and `observeHeaders(callback)`.
+- `marker.layer`: provided to draw the document headers on the editor's overview maps (scrollbar, minimap).
 - [`navigation.adapter`](docs/navigation.adapter.md): consumed to let external packages provide navigation headers for any pane item type — see the Adapter API chapter.
 
 ## Contributing

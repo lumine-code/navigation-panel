@@ -1,0 +1,20 @@
+/* The --navigation-marker-*-color custom properties come from this package's own styles/navigation-panel.css. */
+.marker.marker-navigation {
+  z-index: 14;
+
+  &.navigation-marker {
+    background: var(--navigation-marker-color);
+  }
+
+  &.navigation-marker-3 {
+    background: var(--navigation-marker-3-color);
+  }
+
+  &.navigation-marker-2 {
+    background: var(--navigation-marker-2-color);
+  }
+
+  &.navigation-marker-1 {
+    background: var(--navigation-marker-1-color);
+  }
+}
