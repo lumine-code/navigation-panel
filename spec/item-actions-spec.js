@@ -24,7 +24,7 @@ describe("navigation-panel item actions", () => {
     const scroll = actions[0];
     expect(scroll.name).toBe("Scroll");
     expect(scroll.description).toBe(
-      "Scroll the editor to the selected header, keeping the list open",
+      "Scroll the editor to the selected header, keeping the list open.",
     );
     expect(scroll.keystrokes).toEqual(["alt-enter"]);
   });
