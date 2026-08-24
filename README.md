@@ -383,7 +383,7 @@ The style can be adjusted according to user preferences in the `styles.css` file
 
   ```css
   .navigation-marker-1 {
-    border-top: 0.016px solid var(--text-color-info);
+    border-top: 0.016px solid var(--accent-color);
   }
   ```
 

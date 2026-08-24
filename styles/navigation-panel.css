@@ -129,13 +129,13 @@
         }
 
         &.visible {
-          background: color-mix(in srgb, var(--text-color-info) 5%, transparent);
+          background: color-mix(in srgb, var(--accent-color) 5%, transparent);
           > .navigation-state-icon {
-            color: var(--text-color-info);
+            color: var(--accent-only-text-color);
           }
 
           &:hover {
-            background: color-mix(in srgb, var(--text-color-info) 10%, transparent);
+            background: color-mix(in srgb, var(--accent-color) 10%, transparent);
           }
         }
 
