@@ -132,6 +132,129 @@ describe("navigation-panel", () => {
 
       expect(mainModule.headers).toBeNull();
     });
+
+    it("reads the heading-depth limit once per tree build", () => {
+      const { AdapterManager } = require("../lib/adapter-manager");
+      const manager = new AdapterManager();
+      const { fakeItem, headers, adapter } = createFakeAdapterSetup();
+      manager.active = adapter;
+      const configGet = spyOn(lumine.config, "get").and.callThrough();
+
+      const built = manager.buildHeaders(headers, fakeItem);
+
+      const depthReads = configGet.calls
+        .allArgs()
+        .filter(([key]) => key === "navigation-panel.editor.maxHeadingDepth");
+      expect(depthReads.length).toBe(1);
+      expect(built[0].children[0].text).toBe("Section A");
+    });
+  });
+
+  describe("built-in editor cursor updates", () => {
+    let editor;
+    const cursorRanges = () =>
+      Array.from({ length: 1000 }, (_, index) => [
+        [index * 2, 4],
+        [index * 2, 4],
+      ]);
+
+    beforeEach(async () => {
+      await lumine.packages.activatePackage("language-javascript");
+      editor = await lumine.workspace.open();
+      editor.setGrammar(lumine.grammars.grammarForScopeName("source.js"));
+      editor.setText(
+        Array.from(
+          { length: 2000 },
+          (_, row) =>
+            `function function${row}() {}` + (row % 2 === 0 ? ` //$f// Header ${row / 2}` : ""),
+        ).join("\n"),
+      );
+      await editor.getBuffer().getLanguageMode().ready;
+      await pollUntil(() => mainModule.editor === editor && mainModule.headers?.length === 1000);
+    });
+
+    it("publishes bulk cursor additions and removals once", async () => {
+      const updateHeaders = spyOn(mainModule, "updateAdapterHeaders");
+
+      editor.setSelectedBufferRanges(cursorRanges());
+      await Promise.resolve();
+      expect(updateHeaders.calls.count()).toBe(1);
+
+      updateHeaders.calls.reset();
+      editor.consolidateSelections();
+      await Promise.resolve();
+      expect(updateHeaders.calls.count()).toBe(1);
+    });
+
+    it("ignores horizontal cursor bursts and publishes vertical ones once", async () => {
+      editor.setSelectedBufferRanges(cursorRanges());
+      await Promise.resolve();
+      const observer = mainModule.builtinEditorAdapter.activeObserver;
+      const clearCursorItems = spyOn(observer, "clearCursorItems").and.callThrough();
+      const findCursorItems = spyOn(observer, "findCursorItems").and.callThrough();
+      const updateHeaders = spyOn(mainModule, "updateAdapterHeaders");
+
+      editor.selectRight();
+      await Promise.resolve();
+      editor.selectLeft();
+      await Promise.resolve();
+      expect(updateHeaders).not.toHaveBeenCalled();
+      expect(clearCursorItems).not.toHaveBeenCalled();
+      expect(findCursorItems).not.toHaveBeenCalled();
+
+      editor.selectDown();
+      await Promise.resolve();
+      expect(updateHeaders.calls.count()).toBe(1);
+      expect(clearCursorItems.calls.count()).toBe(1000);
+      expect(findCursorItems.calls.count()).toBe(1000);
+      expect(editor.getCursors().length).toBe(1000);
+    });
+  });
+
+  it("keeps the final cursor row after a reentrant move", async () => {
+    const { EditorHeaderObserver } = require("../lib/editor-adapter");
+    const editor = lumine.workspace.buildTextEditor();
+    editor.setText("zero\none\ntwo");
+    const cursor = editor.getLastCursor();
+    let movedReentrantly = false;
+    cursor.onDidChangePosition(() => {
+      if (movedReentrantly) return;
+      movedReentrantly = true;
+      cursor.setBufferPosition([2, 0]);
+    });
+    const publish = jasmine.createSpy("publish");
+    const observer = new EditorHeaderObserver(editor, publish, {
+      traceVisible: () => false,
+      markers: null,
+    });
+    observer.headers = [
+      {
+        startPoint: { row: 0, column: 0 },
+        children: [],
+        currentCount: 0,
+        stackCount: 0,
+      },
+      {
+        startPoint: { row: 2, column: 0 },
+        children: [],
+        currentCount: 0,
+        stackCount: 0,
+      },
+    ];
+    observer.findCursorItems(cursor, 0);
+    publish.calls.reset();
+
+    try {
+      cursor.setBufferPosition([1, 0]);
+      await Promise.resolve();
+
+      expect(cursor.getBufferPosition()).toEqual([2, 0]);
+      expect(cursor.navigationItems[0].startPoint.row).toBe(2);
+      expect(publish.calls.count()).toBe(1);
+    } finally {
+      observer.destroy();
+      editor.destroy();
+    }
   });
 
   describe("built-in markdown scanner", () => {
