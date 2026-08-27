@@ -1,6 +1,6 @@
 /** @jsx etch.dom */
 const etch = require("@lumine-code/etch");
-const { CompositeDisposable, TextEditor } = require("lumine");
+const { CompositeDisposable, Emitter, TextEditor } = require("lumine");
 const { NavigationItem } = require("./navi-item");
 
 // it's required to ommit double scroll request
@@ -14,6 +14,8 @@ function skipNextScroll() {
 
 class NavigationTree {
   constructor() {
+    this.emitter = new Emitter();
+    this.destroyed = false;
     this.headers = null;
     this.searches = null;
     this.instant = false;
@@ -217,11 +219,23 @@ class NavigationTree {
   }
 
   destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
     this.cancelScrollAnimation();
     clearTimeout(this.resetSelectedHeaderTimer);
     clearTimeout(this.searchUpdateTimer);
     this.disposables.dispose();
-    etch.destroy(this);
+    this.emitter.emit("did-destroy");
+    this.emitter.dispose();
+    return etch.destroy(this);
+  }
+
+  onDidDestroy(callback) {
+    return this.emitter.on("did-destroy", callback);
+  }
+
+  isDestroyed() {
+    return this.destroyed;
   }
 
   render() {

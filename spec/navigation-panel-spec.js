@@ -378,4 +378,60 @@ describe("navigation-panel", () => {
       expect(tree.pendingScroll).toBe(0);
     });
   });
+
+  describe("panel reopening", () => {
+    async function closeAndReopenPanel() {
+      const firstTree = mainModule.navigationTree;
+      mainModule.toggleFocus();
+      await pollUntil(() => lumine.workspace.paneForItem(firstTree));
+      await pollUntil(() => document.activeElement === firstTree.refs.navigationScroller);
+      expect(firstTree.refs.searchEditor.element.contains(document.activeElement)).toBe(false);
+      await lumine.workspace.paneForItem(firstTree).destroyItem(firstTree);
+      expect(mainModule.navigationTree).toBeNull();
+
+      mainModule.toggleFocus();
+      expect(mainModule.navigationTree).not.toBe(firstTree);
+      await pollUntil(() => lumine.workspace.paneForItem(mainModule.navigationTree));
+      await pollUntil(
+        () => document.activeElement === mainModule.navigationTree.refs.navigationScroller,
+      );
+      return mainModule.navigationTree;
+    }
+
+    function clickSearch(tree) {
+      const searchElement = tree.refs.searchEditor.element;
+      searchElement.dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0 }),
+      );
+      expect(searchElement.contains(document.activeElement)).toBe(true);
+    }
+
+    it("focuses search by mouse for an unsupported grammar", async () => {
+      const tree = await closeAndReopenPanel();
+      expect(tree.element.textContent).toContain("This grammar is not supported");
+
+      clickSearch(tree);
+    });
+
+    it("focuses search by mouse when a query has no results", async () => {
+      const tree = await closeAndReopenPanel();
+      tree.searchQuery = "missing";
+      tree.update(
+        [
+          {
+            text: "Chapter",
+            level: 1,
+            classList: [],
+            startPoint: { row: 0, column: 0 },
+            children: [],
+          },
+        ],
+        { instant: true },
+      );
+      await pollUntil(() => tree.element.textContent.includes("No results"));
+      tree.focusHeaderList();
+
+      clickSearch(tree);
+    });
+  });
 });
