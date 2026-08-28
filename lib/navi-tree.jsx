@@ -171,7 +171,7 @@ class NavigationTree {
           },
         },
         "navigation-panel:open-selected-header": {
-          description: "Scroll the editor to the selected header, keeping the query.",
+          description: "Scroll the editor to the selected header.",
           didDispatch: () => {
             this.openSelectedHeader({ clearSearch: false });
           },

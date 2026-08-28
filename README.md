@@ -71,6 +71,7 @@ Commands available in `.navigation-panel`:
 
 Commands available in `.navigation-panel-list`:
 
+- `navigation-panel:open-selected-header`: scroll the editor to the selected header and close the list,
 - `navigation-panel:scroll`: scroll to selected header.
 
 ## Sections panel
