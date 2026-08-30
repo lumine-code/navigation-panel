@@ -173,6 +173,17 @@ describe("navigation-panel", () => {
       await pollUntil(() => mainModule.editor === editor && mainModule.headers?.length === 1000);
     });
 
+    it("activates a focused destination through the workspace before moving its cursor", async () => {
+      const open = spyOn(lumine.workspace, "open").and.callThrough();
+
+      await mainModule.builtinEditorAdapter.navigateTo(editor, {
+        startPoint: { row: 6, column: 0 },
+      });
+
+      expect(open).toHaveBeenCalledWith(editor, { searchAllPanes: true });
+      expect(editor.getCursorBufferPosition()).toEqual([6, 0]);
+    });
+
     it("publishes bulk cursor additions and removals once", async () => {
       const updateHeaders = spyOn(mainModule, "updateAdapterHeaders");
 
