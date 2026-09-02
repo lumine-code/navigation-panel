@@ -172,6 +172,8 @@ Global regular expression is `(?:^(#+) +(.+?) *$|^ *(.+?) *: *$)`. The level is 
 
 Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jupyter-repl](https://github.com/lumine-code/jupyter-repl) cells. The scanner runs on Python, IPython (`.ipy`) and Cython sources.
 
+Named cell markers are also outline entries: `# %% Title` has level 1 and each additional `%` increases the level. Flexible horizontal spacing is accepted, every entry receives the `cell` class, and unnamed markers are omitted. An immediate cell type `md`, `markdown`, `[md]`, or `[markdown]` is removed from the title; a marker containing only that type is also omitted.
+
 Additional letter can be used to provide additional parse effect:
 
 - `s`: get only text from first string which occur at line

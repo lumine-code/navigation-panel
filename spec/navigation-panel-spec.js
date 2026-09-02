@@ -286,6 +286,83 @@ describe("navigation-panel", () => {
   });
 
   describe("built-in python scanner", () => {
+    async function scan(text) {
+      const { ScannerPython } = require("../lib/scanner-python");
+      const editor = await lumine.workspace.open();
+      editor.setText(text);
+      return new ScannerPython(editor).getHeaders();
+    }
+
+    it("uses the percent count as the level of named cell markers", async () => {
+      const headers = await scan(
+        ["# %% Top", "# %%% Child", "# %%%% Grandchild", "\t#%%    Second top   "].join("\n"),
+      );
+
+      expect(headers.length).toBe(2);
+      expect(headers[0].text).toBe("Top");
+      expect(headers[0].level).toBe(1);
+      expect(headers[0].classList).toEqual(["cell"]);
+      expect(headers[0].children[0].text).toBe("Child");
+      expect(headers[0].children[0].level).toBe(2);
+      expect(headers[0].children[0].children[0].text).toBe("Grandchild");
+      expect(headers[0].children[0].children[0].level).toBe(3);
+      expect(headers[1].text).toBe("Second top");
+      expect(headers[1].level).toBe(1);
+      expect(headers[1].classList).toEqual(["cell"]);
+    });
+
+    it("removes an immediate markdown cell type from the title", async () => {
+      const headers = await scan(
+        [
+          "# %% md Short",
+          "# %% markdown Long",
+          "# %% [md] Bracketed short",
+          "# %% [markdown] Bracketed long",
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual([
+        "Short",
+        "Long",
+        "Bracketed short",
+        "Bracketed long",
+      ]);
+      expect(headers.every((header) => header.classList.includes("cell"))).toBe(true);
+    });
+
+    it("omits unnamed cell markers, including markers with only a cell type", async () => {
+      const headers = await scan(
+        [
+          "# %%",
+          "# %%   ",
+          "# %% md",
+          "# %% markdown",
+          "# %% [md]",
+          "# %% [markdown]",
+          "# %% Named",
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["Named"]);
+    });
+
+    it("preserves legacy Python headers and cell markers", async () => {
+      const headers = await scan(
+        "#$# Legacy top\n#%%$# Legacy cell peer\n#%%$$# Legacy cell child",
+      );
+
+      expect(headers.length).toBe(2);
+      expect(headers[0].text).toBe("Legacy top");
+      expect(headers[0].level).toBe(1);
+      expect(headers[0].classList).toEqual([]);
+      expect(headers[1].text).toBe("Legacy cell peer");
+      expect(headers[1].level).toBe(1);
+      expect(headers[1].classList).toEqual(["cell"]);
+      expect(headers[1].children[0].text).toBe("Legacy cell child");
+      expect(headers[1].children[0].level).toBe(2);
+      expect(headers[1].children[0].classList).toEqual(["cell"]);
+    });
+
     // The IPython grammar is a dialect of python with its own scope, so it has
     // to be mapped to the python scanner explicitly — scanner lookup is an
     // exact scope match, not a selector.
