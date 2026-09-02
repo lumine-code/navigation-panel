@@ -19,6 +19,10 @@
   "engines": {
     "lumine": "^1.0.0"
   },
+  "specPackages": [
+    "language-ipython",
+    "language-javascript"
+  ],
   "backgroundTips": [
     "You can jump between the sections of the current document with {{ 'navigation-panel:toggle-focus' | keystroke }}"
   ],

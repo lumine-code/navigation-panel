@@ -368,7 +368,7 @@ describe("navigation-panel", () => {
     // exact scope match, not a selector.
     it("scans editors using the IPython grammar", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await lumine.packages.activatePackage("language-python");
+      await lumine.packages.activatePackage("language-ipython");
       const grammar = lumine.grammars.grammarForScopeName("source.python.ipy");
       expect(grammar).toBeTruthy();
 
@@ -392,7 +392,7 @@ describe("navigation-panel", () => {
 
     it("returns no headers when the python scanner is disabled", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await lumine.packages.activatePackage("language-python");
+      await lumine.packages.activatePackage("language-ipython");
       lumine.config.set("navigation-panel.scanners.python", false);
 
       const editor = await lumine.workspace.open();
