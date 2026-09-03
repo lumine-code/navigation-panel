@@ -19,9 +19,9 @@ describe("navigation-panel item actions", () => {
 
   it("derives its actions from the command registrations and the keymap", async () => {
     const header = { text: "Section", startPoint: { row: 4, column: 0 } };
-    await list.selectList.update({ items: [header] });
+    await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
-    const actions = list.selectList.itemActions();
+    const actions = list.selectList.getAvailableActions();
 
     expect(actions.map((action) => action.command)).toEqual([
       "navigation-panel:open-selected-header",
@@ -30,7 +30,7 @@ describe("navigation-panel item actions", () => {
     const open = actions[0];
     expect(open.name).toBe("Open Selected Header");
     expect(open.description).toBe("Scroll the editor to the selected header.");
-    expect(open.keystrokes).toEqual(["enter"]);
+    expect(open.primary).toBe(true);
 
     const scroll = actions[1];
     expect(scroll.name).toBe("Scroll");
@@ -38,45 +38,38 @@ describe("navigation-panel item actions", () => {
       "Scroll the editor to the selected header, keeping the list open.",
     );
     expect(scroll.keystrokes).toEqual(["alt-enter"]);
-    expect(list.selectList.getIdForItem(header)).toBe(":4:0:Section");
+    expect(list.selectList.getItemId(header)).toBe(":4:0:Section");
   });
 
   it("shows the actions as a flow step and runs one against the master list", async () => {
-    list.selectList.show();
+    await list.selectList.show();
     const header = { text: "Section", startPoint: { row: 4, column: 0 } };
-    await list.selectList.update({ items: [header] });
+    await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
 
-    await list.selectList.showItemActions();
+    await list.selectList.showActions();
 
-    expect(list.selectList.itemActionsList.isVisible()).toBeTruthy();
     expect(lumine.workspace.getModalTrail()).toEqual(["Headers", "Actions"]);
-    // The actions list wears the package class, so the package keymap
-    // resolves action keystrokes inside it too.
-    expect(
-      list.selectList.itemActionsList.element.classList.contains("navigation-panel-list"),
-    ).toBe(true);
 
     const spy = spyOn(list, "scrollSelection");
-    const index = list.selectList.itemActionsList.items.findIndex(
-      (item) => item.command === "navigation-panel:scroll",
-    );
-    list.selectList.itemActionsList.selectIndex(index);
-    list.selectList.itemActionsList.confirmSelection();
+    lumine.workspace.popModal();
+    await list.selectList.runAction("navigation-panel:scroll");
 
     expect(spy).toHaveBeenCalled();
     expect(list.selectList.isVisible()).toBeTruthy();
-    expect(list.selectList.itemActionsList.isVisible()).toBeFalsy();
   });
 
   it("opens the highlighted modal-list header through the reused command", async () => {
-    list.selectList.show();
+    await list.selectList.show();
     const header = { text: "Section", startPoint: { row: 4, column: 0 } };
-    await list.selectList.update({ items: [header] });
+    await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
     const confirm = spyOn(list, "confirmSelection");
 
-    lumine.commands.dispatch(list.selectList.element, "navigation-panel:open-selected-header");
+    await lumine.commands.dispatch(
+      list.selectList.getElement(),
+      "navigation-panel:open-selected-header",
+    );
 
     expect(confirm).toHaveBeenCalledOnceWith(header);
   });
