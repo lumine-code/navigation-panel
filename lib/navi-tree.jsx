@@ -209,7 +209,7 @@ class NavigationTree {
       }),
     );
     etch.initialize(this);
-    this.disposables.add(lumine.textEditors.add(this.refs.searchEditor));
+    this.disposables.add(lumine.textEditors.add(this.refs.searchEditor, { role: "input" }));
     this.disposables.add(
       this.refs.searchEditor.onDidChange(() => {
         this.searchQuery = this.refs.searchEditor.getText();
