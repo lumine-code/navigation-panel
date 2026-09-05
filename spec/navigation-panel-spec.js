@@ -1,3 +1,4 @@
+const fs = require("fs");
 const path = require("path");
 const { Disposable } = require("lumine");
 
@@ -282,6 +283,297 @@ describe("navigation-panel", () => {
       expect(headers[0].children.length).toBe(1);
       expect(headers[0].children[0].text).toBe("Sub");
       expect(headers[1].text).toBe("Two");
+
+      const repeatedHeaders = scanner.getHeaders();
+      expect(repeatedHeaders.map((header) => header.text)).toEqual(["One", "Two"]);
+      expect(repeatedHeaders[0].children.map((header) => header.text)).toEqual(["Sub"]);
+    });
+  });
+
+  describe("stateful built-in scanners", () => {
+    it("resets Typst raw-block state before every scan", async () => {
+      const { ScannerTypst } = require("../lib/scanner-typst");
+      const editor = await lumine.workspace.open();
+      editor.setText("= One\n\n```typ\n= Hidden\n```\n\n== Two\n");
+      const scanner = new ScannerTypst(editor);
+
+      for (let iteration = 0; iteration < 2; iteration++) {
+        const headers = scanner.getHeaders();
+        expect(headers.map((header) => header.text)).toEqual(["One"]);
+        expect(headers[0].children.map((header) => header.text)).toEqual(["Two"]);
+      }
+    });
+
+    it("resets reStructuredText section levels before every scan", async () => {
+      const { ScannerRest } = require("../lib/scanner-rest");
+      const editor = await lumine.workspace.open();
+      editor.setText("Title\n=====\n\nSection\n-------\n");
+      const scanner = new ScannerRest(editor);
+
+      for (let iteration = 0; iteration < 2; iteration++) {
+        const headers = scanner.getHeaders();
+        expect(headers.map((header) => header.text)).toEqual(["Title"]);
+        expect(headers[0].children.map((header) => header.text)).toEqual(["Section"]);
+      }
+    });
+  });
+
+  describe("built-in scanner contract", () => {
+    it("runs one scan after setup and passes every raw match to parse in order", () => {
+      const { ScannerAbstract } = require("../lib/scanner-abstract");
+      const calls = [];
+      const matches = [
+        {
+          level: 1,
+          text: "First",
+          classList: ["first"],
+          range: {
+            start: { row: 1, column: 0 },
+            end: { row: 1, column: 5 },
+          },
+        },
+        {
+          ignored: true,
+          range: {
+            start: { row: 4, column: 0 },
+            end: { row: 4, column: 7 },
+          },
+        },
+        {
+          level: 1,
+          text: "Last",
+          classList: ["last"],
+          range: {
+            start: { row: 8, column: 0 },
+            end: { row: 8, column: 4 },
+          },
+        },
+      ];
+
+      class ScannerWithCustomSource extends ScannerAbstract {
+        beforeScan() {
+          calls.push("beforeScan");
+        }
+
+        scan(callback) {
+          calls.push("scan");
+          for (const match of matches) callback(match);
+        }
+
+        parse(match) {
+          calls.push(match);
+          return match.ignored ? undefined : super.parse(match);
+        }
+      }
+
+      const scanner = new ScannerWithCustomSource({ getLineCount: () => 12 });
+      const headers = scanner.getHeaders();
+
+      expect(calls).toEqual(["beforeScan", "scan", ...matches]);
+      expect(headers.map((header) => header.text)).toEqual(["First", "Last"]);
+      expect(headers[0].lastRow).toBe(7);
+      expect(headers[1].lastRow).toBe(12);
+    });
+  });
+
+  describe("built-in BibTeX scanner", () => {
+    async function scan(text) {
+      const { ScannerBibtex } = require("../lib/scanner-bibtex");
+      const editor = await lumine.workspace.open();
+      editor.setText(text);
+      return new ScannerBibtex(editor).getHeaders();
+    }
+
+    function flatten(headers) {
+      return headers.flatMap((header) => [header, ...flatten(header.children)]);
+    }
+
+    it("scans the language-bibtex fixture through the built-in adapter", async () => {
+      const { getTextEditorHeaders } = require("../lib/editor-adapter");
+      const bibtexPath =
+        lumine.packages.resolvePackagePath("language-bibtex") ??
+        path.resolve(__dirname, "..", "..", "language-bibtex");
+      const bibtexPackage = await lumine.packages.activatePackage(bibtexPath);
+      const grammar = lumine.grammars.grammarForScopeName("text.bibtex");
+      const fixture = fs.readFileSync(
+        path.join(bibtexPackage.path, "spec", "fixtures", "sample.bib"),
+        "utf8",
+      );
+      const editor = await lumine.workspace.open();
+      editor.setGrammar(grammar);
+      editor.setText(fixture);
+
+      expect(grammar).toBeTruthy();
+      expect(getTextEditorHeaders(editor).map((header) => header.text)).toEqual([
+        "article: knuth1984",
+        "book: ross1988",
+      ]);
+    });
+
+    for (const [name, newline] of [
+      ["LF", "\n"],
+      ["CRLF", "\r\n"],
+    ]) {
+      it(`supports braces and parentheses with ${name} line endings`, async () => {
+        const headers = await scan(
+          [
+            '@article{braced, title = "Braced"}',
+            '@book(parenthesized)key, title = "Parenthesized")',
+          ].join(newline),
+        );
+
+        expect(headers.map((header) => header.text)).toEqual([
+          "article: braced",
+          "book: parenthesized)key",
+        ]);
+        expect(headers.map((header) => header.startPoint.row)).toEqual([0, 1]);
+      });
+    }
+
+    it("accepts multiline openers and keys while keeping a one-line directive range", async () => {
+      const headers = await scan(
+        ["@ArTiClE", "  {", "    multiline-key", "    ,", '    title = "Title"', "  }"].join("\n"),
+      );
+
+      expect(headers.length).toBe(1);
+      expect(headers[0].text).toBe("ArTiClE: multiline-key");
+      expect(headers[0].startPoint).toEqual({ row: 0, column: 0 });
+      expect(headers[0].endPoint).toEqual({ row: 0, column: 8 });
+    });
+
+    it("accepts a UTF-8 BOM before the first directive", async () => {
+      const headers = await scan('\ufeff@BOOK{Bird1987, title = "Bird"}');
+
+      expect(headers.map((header) => header.text)).toEqual(["BOOK: Bird1987"]);
+      expect(headers[0].startPoint).toEqual({ row: 0, column: 0 });
+    });
+
+    it("skips special directives case-insensitively and entries without keys", async () => {
+      const headers = await scan(
+        [
+          '@STRING{publisher = "Press"}',
+          '@pReAmBlE("preamble")',
+          '@Comment{ @article{fake-comment, title = "Fake"} }',
+          '@comment{ an unmatched " quote and @book{nested-comment, text} }',
+          "@COMMENT ignored text",
+          '@article{, title = "Empty"}',
+          '@book{missing-delimiter title = "Missing"}',
+          '@misc{real, title = "Real"}',
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["misc: real"]);
+    });
+
+    it("ignores entry-like text inside nested, quoted, and escaped values", async () => {
+      const headers = await scan(
+        String.raw`@article{outer,
+  title = {A 6" widget and @book{fake-nested, title = Fake}},
+  note = "Escaped quote \" and @misc{fake-quoted,",
+  annotation = "Nested {6" widget and @inproceedings(fake-parenthesized,} text"
+}
+@book(real, title = "Real")`,
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["article: outer", "book: real"]);
+    });
+
+    it("recovers at a following directive after an unterminated entry", async () => {
+      const headers = await scan(
+        [
+          "@article{broken,",
+          '  title = "unterminated',
+          '@book{recovered, title = "Recovered"}',
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["article: broken", "book: recovered"]);
+      expect(headers.map((header) => header.startPoint.row)).toEqual([0, 2]);
+    });
+
+    it("bounds recovery work for many unterminated comments", async () => {
+      const brokenComments = Array.from(
+        { length: 1000 },
+        (_, index) => `@comment{unterminated-${index}`,
+      );
+      const headers = await scan(
+        [...brokenComments, '@book{recovered, title = "Recovered"}'].join("\n"),
+      );
+
+      expect(headers).toEqual([]);
+    });
+
+    it("fully balances the first entry recovered after malformed input", async () => {
+      const headers = await scan(
+        [
+          "@comment{broken-0",
+          "@comment{broken-1",
+          "@comment{broken-2",
+          "@article{recovered,",
+          "  note = {",
+          "    @book{fake, title={Fake}}",
+          "  }",
+          "}",
+          "@misc{real, title={Real}}",
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["article: recovered", "misc: real"]);
+    });
+
+    it("keeps top-level percent markers, their hierarchy, classes, and line ranges", async () => {
+      const lines = [
+        "Lead %$*% Bibliography",
+        "%$$+% Sources",
+        '@article{first, title = "First"}',
+        "%$-% Warnings",
+        "%$!% Errors",
+        "%$_% Separator",
+      ];
+      const headers = await scan(lines.join("\n"));
+      const flat = flatten(headers);
+
+      expect(headers.map((header) => header.text)).toEqual([
+        "Lead Bibliography",
+        "Warnings",
+        "Errors",
+        "Separator",
+      ]);
+      expect(headers[0].children[0].text).toBe("Sources");
+      expect(headers[0].children[0].children[0].text).toBe("article: first");
+      expect(flat.map((header) => header.classList)).toEqual([
+        ["info"],
+        ["success"],
+        [],
+        ["warning"],
+        ["error"],
+        ["separator"],
+      ]);
+      expect(flat.map((header) => header.startPoint)).toEqual(
+        lines.map((_, row) => ({ row, column: 0 })),
+      );
+      expect(flat.map((header) => header.endPoint)).toEqual(
+        lines.map((line, row) => ({ row, column: line.length })),
+      );
+    });
+
+    it("does not treat percent markers inside entries as navigation headers", async () => {
+      const headers = await scan(
+        [
+          "@article{outer,",
+          '  title = "Outer",',
+          "  % } does not close the entry",
+          "  %$!% Not a marker",
+          "  note = {",
+          '    @book{fake, title = "Fake"}',
+          "  }",
+          "}",
+          "%$*% Real marker",
+        ].join("\n"),
+      );
+
+      expect(headers.map((header) => header.text)).toEqual(["article: outer", "Real marker"]);
+      expect(headers.map((header) => header.classList)).toEqual([[], ["info"]]);
     });
   });
 

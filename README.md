@@ -108,9 +108,9 @@ Headers can be marked with categories. The categories can be filtered in the bot
 
 The elements of the header tree can be collapsed, which can improve workflow or document clarity. The global settings can be changed in the package settings, and local settings can be adjusted using the context menu of the panel or through commands.
 
-## Regex testing
+## Scanner testing
 
-In order to search for markers in a text editor, all lines of the editor are tested using global regular expressions. If the global expression returns a positive search result, the matched lines are further processed. Global expressions can be found below, with different expressions for each scope.
+Most built-in scanners search for markers by testing the editor text with a global regular expression. BibTeX uses a single-pass lexer instead so it can distinguish top-level entries from directives and entry contents.
 
 You can test and analyze the regex patterns below on [regex101](https://regex101.com/). Just select the flavor as `ECMAScript (JavaScript)` and paste the statement.
 
@@ -139,11 +139,12 @@ In case of `([^%\n]*)%(\$+)%(.*)`, the additional letter can be used to provide 
 
 ### BibTeX
 
-Global regular expression is `([^%\n]*)%(\$+)([\*!-]?)%(.*)|^[ ]*\@(\w*)[ ]*{[ ]*([^\,]*)`. The `@<type>{<text>,` is level 6.
+The BibTeX scanner uses a single-pass lexer and emits only citation entries with a non-empty key. It accepts braced and parenthesized entries (`@type{key, ...}` and `@type(key, ...)`), skips `@string`, `@preamble`, and `@comment`, and assigns citation entries level 4. Top-level `%$...%` markers remain available; marker-like text inside an entry or directive is ignored.
 
 - e.g. `%$% Bibliography about countries` -> `1. Bibliography about countries`
 - e.g. `%$$% United Kingdom` -> `1.1. United Kingdom`
-- e.g. `@book{jk2021, ...` -> `1.1.1.1.1.1. jk2021`
+- e.g. `@book{jk2021, ...}` -> `book: jk2021`
+- e.g. `@article(ross1988, ...)` -> `article: ross1988`
 
 Additional letter can be used to provide additional visual effect:
 
