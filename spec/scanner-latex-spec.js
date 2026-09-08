@@ -1,6 +1,12 @@
-const { normalizeLatexText } = require("../lib/scanner-latex");
+const scannerModule = require("../lib/scanner-latex");
+const { ScannerLatex } = scannerModule;
+const normalizeLatexText = (text) => ScannerLatex.normalizeText(text);
 
 describe("LaTeX heading text", () => {
+  it("exports the scanner constructor as the adapter entry point", () => {
+    expect(Object.values(scannerModule)).toEqual([ScannerLatex]);
+  });
+
   it("renders common commands as compact Unicode", () => {
     expect(
       normalizeLatexText(
