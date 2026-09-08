@@ -129,6 +129,8 @@ Global regular expression is `([^%\n]*)%(\$+)([\*\+\-\!\_]?)%(.*)|^[^\%\n]*\\(pa
 - e.g. `\part{Resources}` -> `1.1.1.1. Resources`
 - e.g. `\part[Resources]{Resources but to long to TOC}` -> `1.1.1.1. Resources`
 
+Common Greek and mathematical commands are rendered as compact Unicode in the outline.
+
 In case of `([^%\n]*)%(\$+)%(.*)`, the additional letter can be used to provide additional visual effect:
 
 - `*`: info category
