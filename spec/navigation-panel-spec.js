@@ -75,6 +75,51 @@ describe("navigation-panel", () => {
     return { fakeItem, headers, adapter, navigateTo };
   }
 
+  describe("workspace serialization", () => {
+    it("restores one tree and wires adapters delivered after restoration", async () => {
+      await lumine.packages.deactivatePackage("navigation-panel");
+      const pack = lumine.packages.getLoadedPackage("navigation-panel");
+      mainModule = pack.mainModule;
+      const initialize = spyOn(mainModule, "initialize").and.callThrough();
+      const deserialize = spyOn(mainModule, "deserializeNavigationTree").and.callThrough();
+      const activate = spyOn(mainModule, "activate").and.callThrough();
+      const initialActivation = spyOn(
+        lumine.packages,
+        "hasActivatedInitialPackages",
+      ).and.returnValue(false);
+      const state = { deserializer: "navigation-panel/NavigationTree" };
+      const restored = lumine.deserializers.deserialize(state);
+
+      expect(restored.serialize()).toEqual(state);
+      expect(mainModule.getNavigationTree()).toBe(restored);
+      expect(lumine.deserializers.deserialize(restored.serialize())).toBe(restored);
+      expect(initialize.calls.count()).toBe(1);
+      expect(deserialize.calls.count()).toBe(2);
+      expect(activate).not.toHaveBeenCalled();
+
+      initialActivation.and.callThrough();
+      await lumine.packages.activatePackage(packageRoot);
+      expect(initialize.calls.count()).toBe(1);
+      expect(activate.calls.count()).toBe(1);
+      expect(mainModule.navigationTree).toBe(restored);
+
+      const { fakeItem, adapter } = createFakeAdapterSetup();
+      mainModule.consumeNavigationAdapter(adapter);
+      const pane = lumine.workspace.getCenter().getActivePane();
+      pane.addItem(fakeItem);
+      pane.activateItem(fakeItem);
+
+      await pollUntil(() => restored.element.querySelectorAll(".navigation-text").length === 3);
+      expect(mainModule.navigationTree).toBe(restored);
+
+      restored.destroy();
+      expect(mainModule.navigationTree).toBeNull();
+      const reopened = lumine.deserializers.deserialize(state);
+      expect(reopened).not.toBe(restored);
+      expect(mainModule.getNavigationTree()).toBe(reopened);
+    });
+  });
+
   describe("navigation.adapter consumption", () => {
     it("renders outline entries provided by an adapter", async () => {
       const { fakeItem, adapter } = createFakeAdapterSetup();

@@ -729,6 +729,10 @@ class NavigationTree {
     return "Navigation";
   }
 
+  serialize() {
+    return { deserializer: "navigation-panel/NavigationTree" };
+  }
+
   getIconName() {
     return "list-unordered";
   }
