@@ -742,7 +742,7 @@ class NavigationTree {
   }
 
   getAllowedLocations() {
-    return ["left", "right"];
+    return this.getDefaultLocation() === "left" ? ["left", "right"] : ["right", "left"];
   }
 
   filter() {

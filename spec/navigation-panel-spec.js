@@ -34,6 +34,17 @@ describe("navigation-panel", () => {
     mainModule = pkg.mainModule;
   });
 
+  it("puts the configured default side first", () => {
+    const tree = mainModule.getNavigationTree();
+    lumine.config.set("navigation-panel.panel.defaultSide", "left");
+    expect(tree.getDefaultLocation()).toBe("left");
+    expect(tree.getAllowedLocations()).toEqual(["left", "right"]);
+
+    lumine.config.set("navigation-panel.panel.defaultSide", "right");
+    expect(tree.getDefaultLocation()).toBe("right");
+    expect(tree.getAllowedLocations()).toEqual(["right", "left"]);
+  });
+
   function createFakeAdapterSetup() {
     const fakeItem = {
       element: document.createElement("div"),
