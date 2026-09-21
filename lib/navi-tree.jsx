@@ -40,7 +40,7 @@ class NavigationTree {
     this.standard = true;
 
     this.disposables = new CompositeDisposable(
-      lumine.commands.add("lumine-workspace", {
+      lumine.commands.add(".navigation-panel", {
         "navigation-panel:all-categories": {
           description: "Show the headers of every category in the panel.",
           didDispatch: () => {

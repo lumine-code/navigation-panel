@@ -34,6 +34,16 @@ describe("navigation-panel", () => {
     mainModule = pkg.mainModule;
   });
 
+  it("keeps panel-owned commands off the global cold-command surface", () => {
+    const command = "navigation-panel:all-categories";
+    const workspaceCommands = lumine.commands.findCommands({ target: workspaceElement });
+    const panelCommands = lumine.commands.findCommands({
+      target: mainModule.getNavigationTree().element,
+    });
+    expect(workspaceCommands.some(({ name }) => name === command)).toBe(false);
+    expect(panelCommands.some(({ name }) => name === command)).toBe(true);
+  });
+
   it("puts the configured default side first", () => {
     const tree = mainModule.getNavigationTree();
     lumine.config.set("navigation-panel.panel.defaultSide", "left");
@@ -94,10 +104,6 @@ describe("navigation-panel", () => {
       const initialize = spyOn(mainModule, "initialize").and.callThrough();
       const deserialize = spyOn(mainModule, "deserializeNavigationTree").and.callThrough();
       const activate = spyOn(mainModule, "activate").and.callThrough();
-      const initialActivation = spyOn(
-        lumine.packages,
-        "hasActivatedInitialPackages",
-      ).and.returnValue(false);
       const state = { deserializer: "navigation-panel/NavigationTree" };
       const restored = lumine.deserializers.deserialize(state);
 
@@ -106,9 +112,8 @@ describe("navigation-panel", () => {
       expect(lumine.deserializers.deserialize(restored.serialize())).toBe(restored);
       expect(initialize.calls.count()).toBe(1);
       expect(deserialize.calls.count()).toBe(2);
-      expect(activate).not.toHaveBeenCalled();
+      expect(activate).toHaveBeenCalledTimes(1);
 
-      initialActivation.and.callThrough();
       await lumine.packages.activatePackage(packageRoot);
       expect(initialize.calls.count()).toBe(1);
       expect(activate.calls.count()).toBe(1);
@@ -216,7 +221,8 @@ describe("navigation-panel", () => {
       ]);
 
     beforeEach(async () => {
-      await lumine.packages.activatePackage("language-javascript");
+      const javascriptPackage = await lumine.packages.activatePackage("language-javascript");
+      await javascriptPackage.resourceLoadPromise;
       editor = await lumine.workspace.open();
       editor.setGrammar(lumine.grammars.grammarForScopeName("source.js"));
       editor.setText(
@@ -450,6 +456,7 @@ describe("navigation-panel", () => {
         lumine.packages.resolvePackagePath("language-bibtex") ??
         path.resolve(__dirname, "..", "..", "language-bibtex");
       const bibtexPackage = await lumine.packages.activatePackage(bibtexPath);
+      await bibtexPackage.resourceLoadPromise;
       const grammar = lumine.grammars.grammarForScopeName("text.bibtex");
       const fixture = fs.readFileSync(
         path.join(bibtexPackage.path, "spec", "fixtures", "sample.bib"),
@@ -716,7 +723,8 @@ describe("navigation-panel", () => {
     // exact scope match, not a selector.
     it("scans editors using the IPython grammar", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await lumine.packages.activatePackage("language-ipython");
+      const ipythonPackage = await lumine.packages.activatePackage("language-ipython");
+      await ipythonPackage.resourceLoadPromise;
       const grammar = lumine.grammars.grammarForScopeName("source.python.ipy");
       expect(grammar).toBeTruthy();
 
@@ -740,7 +748,8 @@ describe("navigation-panel", () => {
 
     it("returns no headers when the python scanner is disabled", async () => {
       const { getTextEditorHeaders } = require("../lib/editor-adapter");
-      await lumine.packages.activatePackage("language-ipython");
+      const ipythonPackage = await lumine.packages.activatePackage("language-ipython");
+      await ipythonPackage.resourceLoadPromise;
       lumine.config.set("navigation-panel.scanners.python", false);
 
       const editor = await lumine.workspace.open();
