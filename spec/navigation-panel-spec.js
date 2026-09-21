@@ -112,7 +112,9 @@ describe("navigation-panel", () => {
       expect(lumine.deserializers.deserialize(restored.serialize())).toBe(restored);
       expect(initialize.calls.count()).toBe(1);
       expect(deserialize.calls.count()).toBe(2);
-      expect(activate).toHaveBeenCalledTimes(1);
+      // The restored tree is a facade created before the initial package batch;
+      // the live activation hook runs when the normal bootstrap reaches it.
+      expect(activate).not.toHaveBeenCalled();
 
       await lumine.packages.activatePackage(packageRoot);
       expect(initialize.calls.count()).toBe(1);
