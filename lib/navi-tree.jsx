@@ -1,7 +1,11 @@
 /** @jsx etch.dom */
 const etch = require("@lumine-code/etch");
-const { CompositeDisposable, Emitter, TextEditor } = require("lumine");
-const { NavigationItem } = require("./navi-item");
+const { CompositeDisposable, Disposable, Emitter, TextEditor } = require("lumine");
+const { NavigationItem, getNavigationItemView } = require("./navi-item");
+
+const FOLLOW_TIME_CONSTANT_MS = 120;
+const FOLLOW_COMPLETION_THRESHOLD = 0.5;
+const FOLLOW_MAX_ELAPSED_MS = 200;
 
 // it's required to ommit double scroll request
 // 1. from page scroll observer
@@ -12,6 +16,16 @@ function skipNextScroll() {
   SCROLL_SKIP += 1;
 }
 
+function clampScrollTop(container, value) {
+  const scrollHeight = Number(container.scrollHeight);
+  const clientHeight = Number(container.clientHeight);
+  const maxScrollTop =
+    Number.isFinite(scrollHeight) && Number.isFinite(clientHeight)
+      ? Math.max(0, scrollHeight - clientHeight)
+      : Infinity;
+  return Math.max(0, Math.min(maxScrollTop, value));
+}
+
 class NavigationTree {
   constructor() {
     this.emitter = new Emitter();
@@ -20,13 +34,17 @@ class NavigationTree {
     this.searches = null;
     this.instant = false;
     this.scrollAnimationID = null;
-    this.pendingScroll = 0;
+    this.scrollTargetTop = null;
+    this.scrollVirtualTop = null;
+    this.scrollLastFrameTime = null;
     this.scrollDirection = 0;
     this.selectedNavigationIndex = null;
     this.navigationSelectionActive = false;
     this.resetSelectedHeaderTimer = null;
     this.searchQuery = "";
     this.searchUpdateTimer = null;
+    this.animateScroll = this.animateScroll.bind(this);
+    this.cancelScrollAnimation = this.cancelScrollAnimation.bind(this);
 
     this.searchBar = lumine.config.get("navigation-panel.panel.searchBar");
     this.categoryBar = lumine.config.get("navigation-panel.panel.categoryBar");
@@ -209,6 +227,17 @@ class NavigationTree {
       }),
     );
     etch.initialize(this);
+    const navigationScroller = this.refs.navigationScroller;
+    navigationScroller.addEventListener("wheel", this.cancelScrollAnimation, { passive: true });
+    navigationScroller.addEventListener("pointerdown", this.cancelScrollAnimation, {
+      passive: true,
+    });
+    this.disposables.add(
+      new Disposable(() => {
+        navigationScroller.removeEventListener("wheel", this.cancelScrollAnimation);
+        navigationScroller.removeEventListener("pointerdown", this.cancelScrollAnimation);
+      }),
+    );
     this.disposables.add(lumine.textEditors.add(this.refs.searchEditor, { role: "input" }));
     this.disposables.add(
       this.refs.searchEditor.onDidChange(() => {
@@ -290,7 +319,7 @@ class NavigationTree {
           {items.map((item) => {
             return (
               <NavigationItem
-                {...item}
+                item={item}
                 key={item.startPoint.row}
                 skipNextScroll={skipNextScroll}
                 clearSearchAfterNavigate={this.clearSearchAfterNavigate.bind(this)}
@@ -390,6 +419,34 @@ class NavigationTree {
     etch.update(this);
   }
 
+  updateVisibility(items, props = {}) {
+    if (Object.hasOwn(props, "scrollDirection")) {
+      this.scrollDirection = props.scrollDirection;
+    }
+    if (this.searches !== null) {
+      const affectedItems = new Set(items);
+      items = this.searches.filter((item) => affectedItems.has(item.sourceItem));
+      for (const item of items) item.visibility = item.sourceItem.visibility;
+    }
+
+    if (this.visibility === 2) {
+      return this.updateAutoCollapseVisibility(items).then(() => this.scrollToCurrent());
+    }
+    for (const item of items) getNavigationItemView(item)?.updateVisibility();
+    this.scrollToCurrent();
+    return null;
+  }
+
+  async updateAutoCollapseVisibility(items) {
+    // Parent views can create or destroy descendant views. Resolve each view
+    // only after the preceding ancestor update has settled so Etch operations
+    // never race over the same subtree.
+    for (const item of items) {
+      const update = getNavigationItemView(item)?.updateVisibility();
+      if (update?.then) await update;
+    }
+  }
+
   readAfterUpdate() {
     this.collapseWork = null;
     this.restoreSelectedHeader();
@@ -419,10 +476,12 @@ class NavigationTree {
     if (element) {
       return this.scrollToElement(element);
     }
+    this.cancelScrollAnimation();
   }
 
   scrollToElement(element) {
     if (this.instant === null) {
+      this.cancelScrollAnimation();
       this.instant = false;
       return; // do not scroll
     }
@@ -439,7 +498,7 @@ class NavigationTree {
     let limitTop = containerHeight * 0.15;
     let limitBottom = containerHeight * 0.85;
 
-    if (relativeTop > limitTop && relativeTop < limitBottom) {
+    if (relativeTop >= limitTop && relativeTop <= limitBottom) {
       // The target already sits in the comfortable band, so this update asks for
       // no movement at all. Stop an animation still running towards an earlier
       // target: it would carry the list away from the header we just accepted.
@@ -463,40 +522,72 @@ class NavigationTree {
       return;
     }
 
-    // Custom smooth scroll animation
-    this.cancelScrollAnimation();
-    this.pendingScroll = targetScrollTop - container.scrollTop;
-
-    const animate = () => {
-      if (Math.abs(this.pendingScroll) < 1) {
-        container.scrollTop = targetScrollTop;
-        this.pendingScroll = 0;
-        this.scrollAnimationID = null;
-        return;
-      }
-      let step = Math.trunc(this.pendingScroll / 12);
-      if (step === 0) step = Math.sign(this.pendingScroll);
-      let currentTop = container.scrollTop;
-      container.scrollTop += step;
-      this.pendingScroll -= step;
-      if (container.scrollTop === currentTop) {
-        this.pendingScroll = 0;
-        this.scrollAnimationID = null;
-        return; // stop if not scrolling more
-      }
-      this.scrollAnimationID = requestAnimationFrame(animate);
-    };
-
-    this.scrollAnimationID = requestAnimationFrame(animate);
+    this.animateScrollTo(targetScrollTop);
     this.instant = false;
   }
 
-  cancelScrollAnimation() {
-    if (this.scrollAnimationID) {
-      cancelAnimationFrame(this.scrollAnimationID);
-      this.scrollAnimationID = null;
+  animateScrollTo(targetScrollTop) {
+    const container = this.refs.navigationScroller;
+    if (!container) return;
+    this.scrollTargetTop = clampScrollTop(container, targetScrollTop);
+    if (this.scrollAnimationID !== null) return;
+
+    this.scrollVirtualTop = container.scrollTop;
+    this.scrollLastFrameTime = null;
+    if (Math.abs(this.scrollTargetTop - this.scrollVirtualTop) <= FOLLOW_COMPLETION_THRESHOLD) {
+      container.scrollTop = this.scrollTargetTop;
+      this.clearScrollAnimationState();
+      return;
     }
-    this.pendingScroll = 0;
+    this.scrollAnimationID = requestAnimationFrame(this.animateScroll);
+  }
+
+  animateScroll(timestamp) {
+    this.scrollAnimationID = null;
+    const container = this.refs.navigationScroller;
+    if (!container || this.scrollTargetTop === null || this.scrollVirtualTop === null) {
+      this.clearScrollAnimationState();
+      return;
+    }
+
+    const elapsed =
+      this.scrollLastFrameTime === null
+        ? 1000 / 60
+        : Math.min(Math.max(0, timestamp - this.scrollLastFrameTime), FOLLOW_MAX_ELAPSED_MS);
+    this.scrollLastFrameTime = timestamp;
+
+    const actualScrollTop = container.scrollTop;
+    if (Math.abs(actualScrollTop - this.scrollVirtualTop) > 1) {
+      // A keyboard command, scrollbar drag or package took over the panel.
+      // Do not fight it toward a now-stale automatic target.
+      this.clearScrollAnimationState();
+      return;
+    }
+    const pending = this.scrollTargetTop - this.scrollVirtualTop;
+    if (Math.abs(pending) <= FOLLOW_COMPLETION_THRESHOLD) {
+      container.scrollTop = this.scrollTargetTop;
+      this.clearScrollAnimationState();
+      return;
+    }
+
+    const alpha = 1 - Math.exp(-elapsed / FOLLOW_TIME_CONSTANT_MS);
+    this.scrollVirtualTop += pending * alpha;
+    container.scrollTop = this.scrollVirtualTop;
+    this.scrollAnimationID = requestAnimationFrame(this.animateScroll);
+  }
+
+  cancelScrollAnimation() {
+    if (this.scrollAnimationID !== null) {
+      cancelAnimationFrame(this.scrollAnimationID);
+    }
+    this.clearScrollAnimationState();
+  }
+
+  clearScrollAnimationState() {
+    this.scrollAnimationID = null;
+    this.scrollTargetTop = null;
+    this.scrollVirtualTop = null;
+    this.scrollLastFrameTime = null;
   }
 
   getSelectableHeaderBlocks() {
@@ -774,6 +865,7 @@ class NavigationTree {
         let display = this.highlightMatchesInElement(item.text, matches);
         items.push({
           ...item,
+          sourceItem: item,
           score: score,
           children: [],
           filterResult: display,

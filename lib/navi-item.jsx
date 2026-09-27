@@ -1,6 +1,8 @@
 /** @jsx etch.dom */
 const etch = require("@lumine-code/etch");
 
+const itemViews = new WeakMap();
+
 class NavigationItem {
   constructor(props) {
     this.updateProps(props);
@@ -34,14 +36,41 @@ class NavigationItem {
   }
 
   updateProps(props) {
-    this.item = props;
+    if (this.item && this.item !== props.item && itemViews.get(this.item) === this) {
+      itemViews.delete(this.item);
+    }
+    this.item = props.item;
+    itemViews.set(this.item, this);
     this.states = props.states;
     this.skipNextScroll = props.skipNextScroll;
     this.clearSearchAfterNavigate = props.clearSearchAfterNavigate;
   }
 
   destroy() {
+    if (itemViews.get(this.item) === this) itemViews.delete(this.item);
     etch.destroy(this);
+  }
+
+  updateVisibility() {
+    // collapseWork is a one-render command. Its copied value can outlive the
+    // tree's readAfterUpdate reset, so only the persistent mode responds to
+    // later viewport-only updates.
+    if (this.states.visibility === 2) {
+      const showChildren = this.computeAutoCollapseShow();
+      if (showChildren !== this.showChildren) {
+        this.showChildren = showChildren;
+        return etch.update(this);
+      }
+    }
+    this.refs.block?.classList.toggle("visible", this.hasVisibleTrace());
+    return null;
+  }
+
+  hasVisibleTrace() {
+    return Boolean(
+      this.item.visibility ||
+      (!this.showChildren && this.item.children.length && this.checkChildrenVisibility(this.item)),
+    );
   }
 
   render() {
@@ -81,7 +110,7 @@ class NavigationItem {
       naviList = this.item.children.map((item) => {
         return (
           <NavigationItem
-            {...item}
+            item={item}
             key={item.startPoint.row}
             skipNextScroll={this.skipNextScroll}
             states={this.states}
@@ -94,19 +123,13 @@ class NavigationItem {
 
     let stackClass = this.item.stackCount > 0 ? " stack" : "";
     let currentClass = this.item.currentCount > 0 ? " current" : "";
-    let visibleClass = this.item.visibility > 0 ? " visible" : "";
-
-    if (!this.item.visibility && this.item.children.length) {
-      if (!this.showChildren && this.checkChildrenVisibility(this.item)) {
-        visibleClass = " visible";
-      }
-    }
+    const visibleClass = this.hasVisibleTrace() ? " visible" : "";
 
     let naviClass = this.item.classList.length ? " " + this.item.classList.join(" ") : "";
 
     return (
       <div class={"navigation-tree" + stackClass} ref="tree">
-        <div class={"navigation-block" + naviClass + currentClass + visibleClass}>
+        <div class={"navigation-block" + naviClass + currentClass + visibleClass} ref="block">
           <div
             class={"navigation-icon navigation-state-icon" + iconClass}
             on={{ click: this.toggleNested }}
@@ -177,4 +200,8 @@ class NavigationItem {
   }
 }
 
-module.exports = { NavigationItem };
+function getNavigationItemView(item) {
+  return itemViews.get(item) ?? null;
+}
+
+module.exports = { NavigationItem, getNavigationItemView };

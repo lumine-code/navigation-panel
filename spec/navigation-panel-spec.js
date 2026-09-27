@@ -157,6 +157,60 @@ describe("navigation-panel", () => {
       expect(texts).toEqual(["Chapter One", "Section A", "Chapter Two"]);
     });
 
+    it("updates traced visibility without rebuilding the outline tree", async () => {
+      const { fakeItem, adapter } = createFakeAdapterSetup();
+      mainModule.consumeNavigationAdapter(adapter);
+      const pane = lumine.workspace.getCenter().getActivePane();
+      pane.addItem(fakeItem);
+      pane.activateItem(fakeItem);
+      mainModule.open();
+      const tree = mainModule.navigationTree;
+      await pollUntil(() => tree.element.querySelectorAll(".navigation-block").length === 3);
+      const update = spyOn(tree, "update").and.callThrough();
+      const scrollToCurrent = spyOn(tree, "scrollToCurrent");
+
+      mainModule.updateAdapterHeaders(null, {
+        scrollDirection: 10,
+        visibilityChanges: [{ path: [0], visibility: 1 }],
+      });
+
+      expect(update).not.toHaveBeenCalled();
+      expect(scrollToCurrent).toHaveBeenCalled();
+      expect(mainModule.headers[0].visibility).toBe(1);
+      expect(tree.element.querySelector(".navigation-block").classList).toContain("visible");
+    });
+
+    it("updates traced search results without a full tree render", async () => {
+      const { fakeItem, adapter } = createFakeAdapterSetup();
+      mainModule.consumeNavigationAdapter(adapter);
+      const pane = lumine.workspace.getCenter().getActivePane();
+      pane.addItem(fakeItem);
+      pane.activateItem(fakeItem);
+      mainModule.open();
+      const tree = mainModule.navigationTree;
+      await pollUntil(() => tree.element.querySelectorAll(".navigation-block").length === 3);
+      tree.searchQuery = "Chapter";
+      tree.update(mainModule.headers, { instant: true });
+      await pollUntil(
+        () =>
+          tree.searches?.length === 2 &&
+          tree.element.querySelectorAll(".navigation-block").length === 2,
+      );
+      const update = spyOn(tree, "update").and.callThrough();
+      const scrollToCurrent = spyOn(tree, "scrollToCurrent");
+
+      mainModule.updateAdapterHeaders(null, {
+        scrollDirection: 10,
+        visibilityChanges: [{ path: [0], visibility: 1 }],
+      });
+
+      expect(update).not.toHaveBeenCalled();
+      expect(scrollToCurrent).toHaveBeenCalled();
+      expect(tree.searches[0].sourceItem).toBe(mainModule.headers[0]);
+      expect(tree.searches[0].visibility).toBe(1);
+      expect(tree.element.querySelector(".navigation-block").classList).toContain("visible");
+    });
+
     it("navigates through the adapter when an entry is clicked", async () => {
       const { fakeItem, adapter, navigateTo } = createFakeAdapterSetup();
       mainModule.consumeNavigationAdapter(adapter);
@@ -331,6 +385,196 @@ describe("navigation-panel", () => {
       observer.destroy();
       editor.destroy();
     }
+  });
+
+  describe("visible-header tracking", () => {
+    const { EditorHeaderObserver } = require("../lib/editor-adapter");
+
+    function buildObserver({ headers, traceVisible = () => true }) {
+      const observer = Object.create(EditorHeaderObserver.prototype);
+      observer.editor = {
+        getVisibleRowRange: jasmine.createSpy("getVisibleRowRange").and.returnValue([10, 20]),
+        bufferPositionForScreenPosition: jasmine
+          .createSpy("bufferPositionForScreenPosition")
+          .and.callFake(([row]) => ({ row })),
+      };
+      observer.editorView = {
+        getScrollTop: jasmine.createSpy("getScrollTop").and.returnValue(100),
+      };
+      observer.scanner = {};
+      observer.headers = headers;
+      observer.traceVisible = traceVisible;
+      observer.emit = jasmine.createSpy("emit");
+      observer.lastScrollTop = 0;
+      return observer;
+    }
+
+    function header(startRow, lastRow = startRow, visibility) {
+      return {
+        startPoint: { row: startRow, column: 0 },
+        lastRow,
+        visibility,
+        children: [],
+      };
+    }
+
+    it("does no viewport work while tracing is not visible", () => {
+      const traceVisible = jasmine.createSpy("traceVisible").and.returnValue(false);
+      const observer = buildObserver({ headers: [header(0, 99, 0)], traceVisible });
+      const markVisibleItems = spyOn(observer, "markVisibleItems").and.callThrough();
+
+      expect(observer.handleVisibleChange()).toBe(false);
+      expect(traceVisible).toHaveBeenCalled();
+      expect(observer.editorView.getScrollTop).not.toHaveBeenCalled();
+      expect(observer.editor.getVisibleRowRange).not.toHaveBeenCalled();
+      expect(markVisibleItems).not.toHaveBeenCalled();
+      expect(observer.emit).not.toHaveBeenCalled();
+    });
+
+    it("converts only the viewport bounds regardless of header count", () => {
+      const headers = Array.from({ length: 1000 }, (_, row) => header(row));
+      const observer = buildObserver({ headers });
+
+      expect(observer.markVisibleItems()).toBe(true);
+      expect(observer.editor.getVisibleRowRange.calls.count()).toBe(1);
+      expect(observer.editor.bufferPositionForScreenPosition.calls.count()).toBe(2);
+      expect(observer.editor.bufferPositionForScreenPosition).toHaveBeenCalledWith([10, 0]);
+      expect(observer.editor.bufferPositionForScreenPosition).toHaveBeenCalledWith([20, Infinity]);
+      expect(headers[9].visibility).toBe(0);
+      expect(headers[10].visibility).toBe(1);
+      expect(headers[20].visibility).toBe(1);
+      expect(headers[21].visibility).toBe(0);
+
+      expect(observer.markVisibleItems()).toBe(false);
+      expect(observer.editor.bufferPositionForScreenPosition.calls.count()).toBe(4);
+    });
+
+    it("publishes only when the visible header set changes", () => {
+      const first = header(0, 49, 1);
+      const second = header(50, 99, 0);
+      const observer = buildObserver({ headers: [first, second] });
+
+      expect(observer.handleVisibleChange()).toBe(false);
+      expect(observer.emit).not.toHaveBeenCalled();
+
+      observer.editor.getVisibleRowRange.and.returnValue([60, 70]);
+      observer.editorView.getScrollTop.and.returnValue(600);
+      expect(observer.handleVisibleChange()).toBe(true);
+      expect(first.visibility).toBe(0);
+      expect(second.visibility).toBe(1);
+      expect(observer.emit).toHaveBeenCalledOnceWith({
+        scrollDirection: 500,
+        visibilityChanges: [
+          { path: [0], visibility: 0 },
+          { path: [1], visibility: 1 },
+        ],
+      });
+    });
+
+    it("applies visibility-only updates without rebuilding or publishing headers", () => {
+      const root = header(0, 99, 0);
+      const child = header(50, 99, 0);
+      root.children.push(child);
+      const tree = mainModule.getNavigationTree();
+      mainModule.headers = [root];
+      const updateVisibility = spyOn(tree, "updateVisibility");
+      const update = spyOn(tree, "update");
+      const buildHeaders = spyOn(mainModule.adapterManager, "buildHeaders");
+      const markDirty = spyOn(mainModule.navigationList, "markDirty");
+      const published = jasmine.createSpy("published");
+      const subscription = mainModule.onDidUpdateHeaders(published);
+      const props = {
+        scrollDirection: 25,
+        visibilityChanges: [{ path: [0, 0], visibility: 1 }],
+      };
+
+      try {
+        mainModule.updateAdapterHeaders(null, props);
+
+        expect(root.visibility).toBe(0);
+        expect(child.visibility).toBe(1);
+        expect(updateVisibility).toHaveBeenCalledOnceWith([root, child], props);
+        expect(update).not.toHaveBeenCalled();
+        expect(buildHeaders).not.toHaveBeenCalled();
+        expect(markDirty).not.toHaveBeenCalled();
+        expect(published).not.toHaveBeenCalled();
+      } finally {
+        subscription.dispose();
+      }
+    });
+
+    it("invalidates cached visibility when tracing is disabled", () => {
+      const first = header(0, 49, 1);
+      const second = header(50, 99, 0);
+      const observer = buildObserver({ headers: [first, second] });
+
+      expect(observer.clearVisibleItems()).toBe(true);
+      expect(first.visibility).toBe(0);
+      expect(second.visibility).toBe(0);
+      expect(observer.markVisibleItems()).toBe(true);
+      expect(first.visibility).toBe(1);
+      expect(second.visibility).toBe(0);
+    });
+
+    it("traces only while the navigation tree is the visible dock item", () => {
+      lumine.config.set("navigation-panel.panel.traceVisible", true);
+      const tree = mainModule.getNavigationTree();
+      const pane = { getActiveItem: () => tree };
+      const container = { isVisible: () => true };
+      spyOn(lumine.workspace, "paneForItem").and.returnValue(pane);
+      spyOn(lumine.workspace, "paneContainerForItem").and.returnValue(container);
+
+      expect(mainModule.builtinEditorAdapter.traceVisible()).toBe(true);
+
+      spyOn(container, "isVisible").and.returnValue(false);
+      expect(mainModule.builtinEditorAdapter.traceVisible()).toBe(false);
+
+      container.isVisible.and.returnValue(true);
+      spyOn(pane, "getActiveItem").and.returnValue({});
+      expect(mainModule.builtinEditorAdapter.traceVisible()).toBe(false);
+    });
+
+    it("does not revive a completed focus-current command during viewport updates", () => {
+      const { NavigationItem } = require("../lib/navi-item");
+      const child = {
+        text: "Child",
+        classList: [],
+        children: [],
+        startPoint: { row: 1, column: 0 },
+        currentCount: 0,
+        stackCount: 0,
+        visibility: 1,
+      };
+      const item = {
+        text: "Parent",
+        classList: [],
+        children: [child],
+        startPoint: { row: 0, column: 0 },
+        currentCount: 0,
+        stackCount: 0,
+        visibility: 0,
+      };
+      const view = new NavigationItem({
+        item,
+        states: {
+          visibility: 1,
+          collapseWork: 2,
+          info: true,
+          success: true,
+          warning: true,
+          error: true,
+          standard: true,
+        },
+      });
+
+      try {
+        view.showChildren = false;
+        view.updateVisibility();
+        expect(view.showChildren).toBe(false);
+      } finally {
+        view.destroy();
+      }
+    });
   });
 
   describe("built-in markdown scanner", () => {
@@ -800,6 +1044,43 @@ describe("navigation-panel", () => {
     const { NavigationTree } = require("../lib/navi-tree");
     let tree;
 
+    function installAnimationFrameHarness() {
+      let nextId = 1;
+      const pending = new Map();
+      spyOn(window, "requestAnimationFrame").and.callFake((callback) => {
+        const id = nextId++;
+        pending.set(id, callback);
+        return id;
+      });
+      spyOn(window, "cancelAnimationFrame").and.callFake((id) => pending.delete(id));
+      return {
+        pendingCount: () => pending.size,
+        step(timestamp) {
+          const entry = pending.entries().next().value;
+          if (!entry) return false;
+          const [id, callback] = entry;
+          pending.delete(id);
+          callback(timestamp);
+          return true;
+        },
+        drain() {
+          let timestamp = 0;
+          let count = 0;
+          while (this.step((timestamp += 1000 / 120))) {
+            if (++count > 1000) throw new Error("Scroll animation did not settle");
+          }
+        },
+      };
+    }
+
+    function attachFakeScroller() {
+      tree.refs.navigationScroller = {
+        clientHeight: 100,
+        scrollHeight: 2000,
+        scrollTop: 0,
+      };
+    }
+
     afterEach(() => {
       if (tree) {
         tree.destroy();
@@ -807,22 +1088,69 @@ describe("navigation-panel", () => {
       }
     });
 
-    // Updates arrive faster than the animation runs: an adapter that reports the
-    // viewport asynchronously can put a stale header on screen for one update and
-    // the right one on the next. The second request finds its target already in
-    // view and asks for no movement, so it has to stop the animation the stale
-    // one started — otherwise the list keeps travelling to the stale header and
-    // settles there, which is exactly what the pdf outline did.
-    it("stops an in-flight animation when the next target is already in view", () => {
+    it("retargets an active animation without scheduling another frame", () => {
       tree = new NavigationTree();
-      tree.refs.navigationScroller = { clientHeight: 100, scrollTop: 0 };
+      attachFakeScroller();
+      const frames = installAnimationFrameHarness();
 
       tree.scrollToElement({ offsetTop: 500 });
-      expect(tree.scrollAnimationID).not.toBeNull();
+      expect(frames.pendingCount()).toBe(1);
+      frames.step(0);
+      const pendingFrame = tree.scrollAnimationID;
+      const frameRequests = window.requestAnimationFrame.calls.count();
 
-      tree.scrollToElement({ offsetTop: 40 });
+      tree.scrollToElement({ offsetTop: 600 });
+      expect(window.requestAnimationFrame.calls.count()).toBe(frameRequests);
+      expect(tree.scrollAnimationID).toBe(pendingFrame);
+      expect(frames.pendingCount()).toBe(1);
+      expect(tree.scrollTargetTop).toBe(515);
+    });
+
+    it("uses the latest target and lands on it exactly", () => {
+      tree = new NavigationTree();
+      attachFakeScroller();
+      const frames = installAnimationFrameHarness();
+
+      tree.scrollToElement({ offsetTop: 500 });
+      frames.step(0);
+      tree.scrollToElement({ offsetTop: 600 });
+      frames.drain();
+
+      expect(tree.refs.navigationScroller.scrollTop).toBe(515);
+      expect(tree.scrollTargetTop).toBeNull();
       expect(tree.scrollAnimationID).toBeNull();
-      expect(tree.pendingScroll).toBe(0);
+      expect(frames.pendingCount()).toBe(0);
+    });
+
+    it("cancels an active animation when the target enters the comfortable band", () => {
+      tree = new NavigationTree();
+      attachFakeScroller();
+      const frames = installAnimationFrameHarness();
+
+      tree.scrollToElement({ offsetTop: 500 });
+      const pendingFrame = tree.scrollAnimationID;
+      tree.scrollToElement({ offsetTop: 40 });
+
+      expect(window.cancelAnimationFrame).toHaveBeenCalledOnceWith(pendingFrame);
+      expect(tree.scrollTargetTop).toBeNull();
+      expect(tree.scrollAnimationID).toBeNull();
+      expect(frames.pendingCount()).toBe(0);
+    });
+
+    it("stops following when another input changes the panel scroll position", () => {
+      tree = new NavigationTree();
+      attachFakeScroller();
+      const frames = installAnimationFrameHarness();
+
+      tree.scrollToElement({ offsetTop: 500 });
+      frames.step(0);
+      tree.refs.navigationScroller.scrollTop = 300;
+      frames.step(1000 / 120);
+
+      expect(tree.refs.navigationScroller.scrollTop).toBe(300);
+      expect(tree.scrollTargetTop).toBeNull();
+      expect(tree.scrollAnimationID).toBeNull();
+      expect(frames.pendingCount()).toBe(0);
     });
   });
 
