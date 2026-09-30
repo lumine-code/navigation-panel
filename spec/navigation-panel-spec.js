@@ -986,7 +986,7 @@ describe("navigation-panel", () => {
         ].join("\n"),
       );
 
-      const headers = getTextEditorHeaders(editor);
+      const headers = await getTextEditorHeaders(editor);
       expect(headers.length).toBe(1);
       expect(headers[0].text).toBe("Setup");
       expect(headers[0].children.map((header) => header.text)).toEqual(["Load"]);

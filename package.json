@@ -22,7 +22,9 @@
   "specPackages": [
     "language-bibtex",
     "language-ipython",
-    "language-javascript"
+    "language-javascript",
+    "language-python",
+    "symbol-tree-sitter"
   ],
   "main": "./lib/main",
   "files": [
