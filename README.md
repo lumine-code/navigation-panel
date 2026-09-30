@@ -175,9 +175,7 @@ Global regular expression is `(?:^(#+) +(.+?) *$|^ *(.+?) *: *$)`. The level is 
 
 Global regular expression is `^([^#\n]*)#(?:%%)?(\$+[spv1]?|\?)([\*\+\-\!\_]?)#(.*)` where count of `$` mean the level on list. Headers are compatible with [jupyter-repl](https://github.com/lumine-code/jupyter-repl) cells. The scanner runs on Python, IPython (`.ipy`) and Cython sources.
 
-Named cell markers are also outline entries: `# %% Title` has level 1 and each additional `%` increases the level. Flexible horizontal spacing is accepted, every entry receives the `cell` class, and unnamed markers are omitted. Python and Cython retain legacy Markdown metadata in titles.
-
-IPython outlines use the document's settled syntax tree. Named code, Markdown and raw markers omit their bracketed type metadata (`[code]`, `[markdown]`, `[md]` or `[raw]`), while bare words such as `markdown` and `raw` remain titles. Marker-like text inside strings, expressions, continued lines or literal bodies does not create false entries. Legacy annotations remain available in actual Python comments, including class and function annotations; notebook fragment editors keep percent markers as content. Traversals yield in bounded chunks, reuse the existing tree and retry when an edit changes their snapshot.
+Use `#%%$# Section` for a cell entry and `#%%$$# Child` for its child. Ordinary document markers such as `# %% Title`, `# %% [markdown] Notes` and `# %% [raw] Payload` do not create outline entries.
 
 Additional letter can be used to provide additional parse effect:
 
