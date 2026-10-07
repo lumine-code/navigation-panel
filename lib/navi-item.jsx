@@ -12,7 +12,7 @@ class NavigationItem {
       this.showChildren = Boolean(this.states.visibility);
     }
     etch.initialize(this);
-    this.attachToElement();
+    this.writeAfterUpdate();
   }
 
   update(props) {
@@ -123,13 +123,12 @@ class NavigationItem {
 
     let stackClass = this.item.stackCount > 0 ? " stack" : "";
     let currentClass = this.item.currentCount > 0 ? " current" : "";
-    const visibleClass = this.hasVisibleTrace() ? " visible" : "";
 
     let naviClass = this.item.classList.length ? " " + this.item.classList.join(" ") : "";
 
     return (
       <div class={"navigation-tree" + stackClass} ref="tree">
-        <div class={"navigation-block" + naviClass + currentClass + visibleClass} ref="block">
+        <div class={"navigation-block" + naviClass + currentClass} ref="block">
           <div
             class={"navigation-icon navigation-state-icon" + iconClass}
             on={{ click: this.toggleNested }}
@@ -190,13 +189,13 @@ class NavigationItem {
   }
 
   writeAfterUpdate() {
-    this.attachToElement();
-  }
-
-  attachToElement() {
     if (this.refs.tree) {
       this.refs.tree.navigationTreeView = this;
     }
+    // Viewport updates own this class outside Etch. Reapply it after a render
+    // so switching editors cannot leave the trace from the previous viewport
+    // when Etch finds the rest of the cached class attribute unchanged.
+    this.refs.block?.classList.toggle("visible", this.hasVisibleTrace());
   }
 }
 
