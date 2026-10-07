@@ -124,7 +124,7 @@
           outline-offset: -2px;
         }
         &.separator {
-          border-top: 1px solid black;
+          border-top: 1px solid var(--base-border-color);
           padding-top: 2px;
         }
 
