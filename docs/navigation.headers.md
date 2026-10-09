@@ -31,14 +31,20 @@ In your `package.json`:
 type NavigationHeaders = {
   getEditor(): TextEditor | object | null;
   getFlattenHeaders(): Header[];
-  onDidUpdateHeaders(callback: (headers: Header[]) => void): Disposable;
-  observeHeaders(callback: (headers: Header[]) => void): Disposable;
+  onDidUpdateHeaders(
+    callback: (item: TextEditor | object | null, headers: Header[] | null) => void,
+  ): Disposable;
+  observeHeaders(
+    callback: (item: TextEditor | object | null, headers: Header[] | null) => void,
+  ): Disposable;
 };
 
 type Header = {
   text: string;
   level: number;
-  row?: number;
+  revel: number;
+  startPoint: { row: number; column: number };
+  endPoint: { row: number; column: number };
   classList?: string[];
   children?: Header[];
 };
@@ -56,8 +62,10 @@ type Header = {
 ```js
 module.exports = {
   consumeNavigationHeaders(service) {
-    return service.observeHeaders((headers) => {
-      this.drawMarkers(headers.filter((header) => header.row != null));
+    return service.observeHeaders((item, headers) => {
+      this.drawMarkers(
+        lumine.workspace.isTextEditor(item) && headers ? service.getFlattenHeaders() : [],
+      );
     });
   },
 };
@@ -69,9 +77,9 @@ module.exports = {
 
 `getEditor()` can return a non-editor pane item, because an adapter may have supplied the headers. Guard before calling `TextEditor` methods on it.
 
-Headers arrive flattened. `level` carries the nesting depth, so a consumer rendering a tree rebuilds it from that rather than walking `children`.
+`getFlattenHeaders()` returns every header in tree order and retains each header's `children`. `level` is the scanner or adapter's declared level; `revel` is its actual tree depth. Subscription callbacks receive the pane item first and the nested header tree second, or `null` when no supported headers are available.
 
-`row` is absent for headers that do not correspond to a buffer row — an adapter listing files, for instance — so filter before treating them as positions.
+`startPoint` and `endPoint` carry buffer positions for text-editor headers. Adapter headers may use synthetic positions, so check the pane item before treating those points as text positions.
 
 The list is replaced wholesale on each update; do not diff against a previous array by identity.
 

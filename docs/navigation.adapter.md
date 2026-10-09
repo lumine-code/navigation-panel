@@ -34,6 +34,11 @@ type NavigationAdapter = {
     item: object,
     callback: (headers: Header[], options?: { instant?: boolean }) => void,
   ): Disposable;
+  navigateTo(
+    item: object,
+    header: Header,
+    options?: { focus?: boolean; addCursor?: boolean },
+  ): unknown;
 };
 
 type Header = {
@@ -44,16 +49,19 @@ type Header = {
   currentCount?: number;
   stackCount?: number;
   filePath?: string;
-  row?: number;
+  startPoint?: { row: number; column: number };
+  endPoint?: { row: number; column: number };
+  visibility?: number;
 };
 ```
 
-| Member                           | Description                                                                                                    |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `handlesItem(item)`              | Whether this adapter owns the pane item. Asked on every active-item change.                                    |
-| `observeHeaders(item, callback)` | Start reporting headers for that item. Call the callback with the current list, and again whenever it changes. |
+| Member                              | Description                                                                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `handlesItem(item)`                 | Whether this adapter owns the pane item. Asked on every active-item change.                                                                       |
+| `observeHeaders(item, callback)`    | Start reporting headers for that item. Call the callback with the current list, and again whenever it changes.                                    |
+| `navigateTo(item, header, options)` | Reveal the selected header in the pane item; `focus: false` keeps the panel focused and `addCursor: true` requests another cursor when supported. |
 
-A header needs `text`, `level`, and `children` (use `[]` for a leaf). `currentCount` and `stackCount` mark the entry as the current one so the panel highlights it. `filePath` makes the row open a file; `row` makes it jump to a buffer position.
+A header needs `text`, `level`, and `children` (use `[]` for a leaf). `currentCount` and `stackCount` mark the entry as the current one so the panel highlights it. `filePath` is display metadata; navigation is delegated to `navigateTo`, which receives the augmented header and its original metadata.
 
 ## Minimal example
 
@@ -83,6 +91,7 @@ module.exports = {
         refresh();
         return item.onDidChange(refresh);
       },
+      navigateTo: (item, header, options) => item.revealEntry(header.filePath, options),
     };
   },
 };

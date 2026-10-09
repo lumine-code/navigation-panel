@@ -92,7 +92,7 @@ A panel has few handy commands. There are mouse interactions:
 
 - use LeftMouseButton to navigate to item,
 - use Ctrl+LeftMouseButton to create a new cursor on the header line and scroll to (text editors only),
-- use Alt+LeftMouseButton to copy item text to clipboard.
+- use Alt+LeftMouseButton to navigate to the item and clear the search.
 
 At context menu there are shortcuts to modify settings locally.
 
