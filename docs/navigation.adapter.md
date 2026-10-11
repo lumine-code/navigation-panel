@@ -113,6 +113,8 @@ Adapters are consulted in registration order; the first whose `handlesItem` retu
 
 Return a `Disposable` from `observeHeaders` that stops your own watching — it is disposed when the item is deactivated or the panel moves on. `consumeNavigationAdapter` separately returns a `Disposable` that unregisters the adapter entirely.
 
+Withdrawing the active adapter also stops its current header observer and refreshes the outline from another matching adapter or the built-in editor scanner. If the current item has no remaining adapter, its previous outline is cleared.
+
 ## Versioning
 
 `1.0.0` provided, `^1.0.0` consumed. A change that breaks this shape gets a new service name rather than a new major version, and both sides move in the same release.
