@@ -111,7 +111,7 @@ class NavigationItem {
         return (
           <NavigationItem
             item={item}
-            key={item.startPoint.row}
+            key={item.id}
             skipNextScroll={this.skipNextScroll}
             states={this.states}
           />

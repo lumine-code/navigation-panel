@@ -40,11 +40,12 @@ type NavigationHeaders = {
 };
 
 type Header = {
+  id: string;
   text: string;
   level: number;
   revel: number;
-  startPoint: { row: number; column: number };
-  endPoint: { row: number; column: number };
+  startPoint?: { row: number; column: number };
+  endPoint?: { row: number; column: number };
   classList?: string[];
   children?: Header[];
 };
@@ -79,7 +80,9 @@ module.exports = {
 
 `getFlattenHeaders()` returns every header in tree order and retains each header's `children`. `level` is the scanner or adapter's declared level; `revel` is its actual tree depth. Subscription callbacks receive the pane item first and the nested header tree second, or `null` when no supported headers are available.
 
-`startPoint` and `endPoint` carry buffer positions for text-editor headers. Adapter headers may use synthetic positions, so check the pane item before treating those points as text positions.
+`id` identifies an entry across tree, search, and modal-list updates. Adapters can supply stable IDs; otherwise the panel generates unique IDs from locations or labels and tree order.
+
+`startPoint` and `endPoint` carry buffer positions for text-editor headers. Adapter headers may omit positions, and any supplied positions belong to the pane item's own document. Check both the pane item and the point before treating it as a text-editor position.
 
 The list is replaced wholesale on each update; do not diff against a previous array by identity.
 

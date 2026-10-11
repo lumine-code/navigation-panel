@@ -42,6 +42,7 @@ type NavigationAdapter = {
 };
 
 type Header = {
+  id?: string;
   text: string;
   level: number;
   children: Header[];
@@ -61,7 +62,11 @@ type Header = {
 | `observeHeaders(item, callback)`    | Start reporting headers for that item. Call the callback with the current list, and again whenever it changes.                                    |
 | `navigateTo(item, header, options)` | Reveal the selected header in the pane item; `focus: false` keeps the panel focused and `addCursor: true` requests another cursor when supported. |
 
-A header needs `text`, `level`, and `children` (use `[]` for a leaf). `currentCount` and `stackCount` mark the entry as the current one so the panel highlights it. `filePath` is display metadata; navigation is delegated to `navigateTo`, which receives the augmented header and its original metadata.
+A header needs `text`, `level`, and `children` (use `[]` for a leaf). Nesting comes from `children`, rather than `level`. An optional `id` identifies the same logical entry across updates and must be unique across the entire tree, including descendants. The panel uses it for tree rendering, flattened search results, and modal-list selection. When omitted, the panel generates a unique ID from the entry's location or label and its occurrence in tree order; provide an explicit ID when entries can move or share a location.
+
+`currentCount` marks the current entry; `stackCount` marks its active ancestors as well, so the panel can expand the current branch. The adapter supplies both. Global next/previous navigation moves relative to the current entry, falling back to the deepest active ancestor when none is current, and wraps at either end.
+
+`startPoint` and `endPoint` are optional real positions in the pane item's own document. Omit them when an entry has no document position; the panel does not invent one. Multiple entries can share a position. `filePath` is display metadata; navigation is delegated to `navigateTo`, which receives the augmented header and its original metadata.
 
 ## Minimal example
 
@@ -77,6 +82,7 @@ module.exports = {
           const entries = item.getEntries();
           callback(
             entries.map((entry, index) => ({
+              id: entry.path,
               text: entry.title,
               level: 1,
               children: [],

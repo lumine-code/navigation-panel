@@ -320,7 +320,7 @@ class NavigationTree {
             return (
               <NavigationItem
                 item={item}
-                key={item.startPoint.row}
+                key={item.id}
                 skipNextScroll={skipNextScroll}
                 clearSearchAfterNavigate={this.clearSearchAfterNavigate.bind(this)}
                 states={states}
@@ -869,7 +869,7 @@ class NavigationTree {
           score: score,
           children: [],
           filterResult: display,
-          filterRow: item.startPoint.row,
+          filterRow: item.startPoint?.row,
         });
       }
       if (item.children && item.children.length > 0) {

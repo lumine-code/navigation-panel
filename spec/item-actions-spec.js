@@ -19,7 +19,7 @@ describe("navigation-panel item actions", () => {
 
   it("derives its actions from the command registrations and the keymap", async () => {
     await list.selectListHost.show();
-    const header = { text: "Section", startPoint: { row: 4, column: 0 } };
+    const header = { id: "section", text: "Section", startPoint: { row: 4, column: 0 } };
     await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
     const actions = list.selectList.getAvailableActions();
@@ -39,12 +39,12 @@ describe("navigation-panel item actions", () => {
       "Scroll the editor to the selected header, keeping the list open.",
     );
     expect(scroll.keystrokes).toEqual(["alt-enter"]);
-    expect(list.selectList.getItemId(header)).toBe(":4:0:Section");
+    expect(list.selectList.getItemId(header)).toBe("section");
   });
 
   it("shows the actions as a flow step and runs one against the master list", async () => {
     await list.selectListHost.show();
-    const header = { text: "Section", startPoint: { row: 4, column: 0 } };
+    const header = { id: "section", text: "Section", startPoint: { row: 4, column: 0 } };
     await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
 
@@ -62,7 +62,7 @@ describe("navigation-panel item actions", () => {
 
   it("opens the highlighted modal-list header through the reused command", async () => {
     await list.selectListHost.show();
-    const header = { text: "Section", startPoint: { row: 4, column: 0 } };
+    const header = { id: "section", text: "Section", startPoint: { row: 4, column: 0 } };
     await list.selectList.setItems([header]);
     await list.selectList.selectIndex(0);
     const confirm = spyOn(list, "confirmSelection");
