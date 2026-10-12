@@ -57,7 +57,7 @@ describe("navigation-panel", () => {
 
   function createFakeAdapterSetup() {
     const fakeItem = {
-      isSingleton: () => true,
+      canCopy: () => false,
       element: document.createElement("div"),
       getTitle: () => "Fake Document",
     };
@@ -245,7 +245,7 @@ describe("navigation-panel", () => {
       const plainItem = {
         element: document.createElement("div"),
         getTitle: () => "Plain",
-        isSingleton: () => true,
+        canCopy: () => false,
       };
       pane.addItem(plainItem);
       pane.activateItem(plainItem);

@@ -39,7 +39,7 @@ describe("Navigation headers after adapter withdrawal", () => {
       item = {
         element: document.createElement("div"),
         getTitle: () => "Owned document",
-        isSingleton: () => true,
+        canCopy: () => false,
       };
       const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(item);

@@ -35,7 +35,7 @@ describe("navigation-panel adapter navigation", () => {
     const item = {
       element: document.createElement("div"),
       getTitle: () => "Patch",
-      isSingleton: () => true,
+      canCopy: () => false,
     };
     let publish;
     const stopped = jasmine.createSpy("stopped");
