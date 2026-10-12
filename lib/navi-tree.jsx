@@ -218,6 +218,12 @@ class NavigationTree {
             this.setSelectedHeaderCollapsed(false);
           },
         },
+        "navigation-panel:toggle-selected-prog": {
+          description: "Switch the selected SOFiSTiK program between +PROG and -PROG.",
+          didDispatch: () => {
+            this.toggleSelectedProg();
+          },
+        },
         "navigation-panel:toggle-search-focus": {
           description: "Move focus between the search field and the header tree.",
           didDispatch: () => {
@@ -747,6 +753,16 @@ class NavigationTree {
     } else {
       text.click();
     }
+  }
+
+  toggleSelectedProg() {
+    const block = this.getSelectedHeaderBlock();
+    if (!block) return;
+    const view = block.closest(".navigation-tree")?.navigationTreeView;
+    if (!view?.item.toggleProg) return;
+    this.navigationSelectionActive = true;
+    this.setSelectedHeaderBlock(block);
+    view.item.toggleProg(block.querySelector(".sofistik-navi-icon"));
   }
 
   setSelectedHeaderCollapsed(collapsed) {

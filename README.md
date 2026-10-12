@@ -52,6 +52,7 @@ Commands available in `.navigation-panel`:
 - `navigation-panel:collapse-selected-header`: collapse selected header,
 - `navigation-panel:expand-selected-header`: expand selected header,
 - `navigation-panel:open-selected-header`: open selected header,
+- `navigation-panel:toggle-selected-prog`: switch the selected SOFiSTiK program between +PROG and -PROG,
 - `navigation-panel:copy-header-text`: copy header text to clipboard,
 - `navigation-panel:all-categories`: activate all categories,
 - `navigation-panel:none-categories`: deactivate all categories,

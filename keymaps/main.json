@@ -17,6 +17,12 @@
     "alt-enter": "navigation-panel:open-selected-header-clear-search",
     "ctrl-enter": "navigation-panel:open-selected-header-add-cursor"
   },
+  ".navigation-panel:focus": {
+    "space": "navigation-panel:toggle-selected-prog"
+  },
+  ".navigation-panel .navigation-scroller:focus": {
+    "space": "navigation-panel:toggle-selected-prog"
+  },
   ".navigation-panel-list lumine-text-editor[mini]": {
     "alt-enter": "navigation-panel:scroll"
   }
