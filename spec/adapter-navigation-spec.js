@@ -32,7 +32,11 @@ describe("navigation-panel adapter navigation", () => {
   });
 
   function attach(headers) {
-    const item = { element: document.createElement("div"), getTitle: () => "Patch" };
+    const item = {
+      element: document.createElement("div"),
+      getTitle: () => "Patch",
+      isSingleton: () => true,
+    };
     let publish;
     const stopped = jasmine.createSpy("stopped");
     const navigateTo = jasmine.createSpy("navigateTo");

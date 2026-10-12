@@ -57,6 +57,7 @@ describe("navigation-panel", () => {
 
   function createFakeAdapterSetup() {
     const fakeItem = {
+      isSingleton: () => true,
       element: document.createElement("div"),
       getTitle: () => "Fake Document",
     };
@@ -244,6 +245,7 @@ describe("navigation-panel", () => {
       const plainItem = {
         element: document.createElement("div"),
         getTitle: () => "Plain",
+        isSingleton: () => true,
       };
       pane.addItem(plainItem);
       pane.activateItem(plainItem);

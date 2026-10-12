@@ -54,7 +54,12 @@ describe("navigation-panel with split editors sharing a buffer", () => {
     await waitForFrames(() => main.editor === leftEditor && main.headers?.length === 2);
 
     leftPane = lumine.workspace.paneForItem(leftEditor);
-    rightPane = leftPane.splitRight({ copyActiveItem: true });
+    rightPane = (
+      await lumine.workspace.copyPaneItem(leftPane.getActiveItem(), {
+        sourcePane: leftPane,
+        splitDirection: "right",
+      })
+    ).pane;
     rightEditor = rightPane.getActiveItem();
     expect(rightEditor).not.toBe(leftEditor);
     expect(rightEditor.getBuffer()).toBe(leftEditor.getBuffer());

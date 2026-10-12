@@ -36,7 +36,11 @@ describe("Navigation headers after adapter withdrawal", () => {
       item.setText("//$// Built-in heading\nbody\n");
       await item.getBuffer().getLanguageMode().ready;
     } else {
-      item = { element: document.createElement("div"), getTitle: () => "Owned document" };
+      item = {
+        element: document.createElement("div"),
+        getTitle: () => "Owned document",
+        isSingleton: () => true,
+      };
       const pane = lumine.workspace.getCenter().getActivePane();
       pane.addItem(item);
       pane.activateItem(item);
