@@ -15,23 +15,6 @@
       ]
     },
     {
-      "label": "Search",
-      "submenu": [
-        {
-          "label": "Go to Header…",
-          "command": "navigation-panel:list"
-        },
-        {
-          "label": "Go to Next Header",
-          "command": "navigation-panel:next-header"
-        },
-        {
-          "label": "Go to Previous Header",
-          "command": "navigation-panel:previous-header"
-        }
-      ]
-    },
-    {
       "label": "Packages",
       "submenu": [
         {
