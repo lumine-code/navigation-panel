@@ -1,4 +1,78 @@
 {
+  "menu": [
+    {
+      "label": "View",
+      "submenu": [
+        {
+          "label": "Toggle View",
+          "submenu": [
+            {
+              "label": "Navigation Panel",
+              "command": "navigation-panel:toggle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Search",
+      "submenu": [
+        {
+          "label": "Go to Header…",
+          "command": "navigation-panel:list"
+        },
+        {
+          "label": "Go to Next Header",
+          "command": "navigation-panel:next-header"
+        },
+        {
+          "label": "Go to Previous Header",
+          "command": "navigation-panel:previous-header"
+        }
+      ]
+    },
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Navigation Panel",
+          "submenu": [
+            {
+              "label": "Open",
+              "command": "navigation-panel:open"
+            },
+            {
+              "label": "Open and Split Down",
+              "command": "navigation-panel:open-and-split-down"
+            },
+            {
+              "label": "Toggle",
+              "command": "navigation-panel:toggle"
+            },
+            {
+              "label": "List Headers",
+              "command": "navigation-panel:list"
+            },
+            {
+              "label": "Hide",
+              "command": "navigation-panel:hide"
+            },
+            {
+              "type": "separator"
+            },
+            {
+              "label": "Next Header",
+              "command": "navigation-panel:next-header"
+            },
+            {
+              "label": "Previous Header",
+              "command": "navigation-panel:previous-header"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "context-menu": {
     ".navigation-block": [
       {
@@ -86,48 +160,5 @@
         "type": "separator"
       }
     ]
-  },
-  "menu": [
-    {
-      "label": "Packages",
-      "submenu": [
-        {
-          "label": "Navigation Panel",
-          "submenu": [
-            {
-              "label": "Open",
-              "command": "navigation-panel:open"
-            },
-            {
-              "label": "Open and Split Down",
-              "command": "navigation-panel:open-and-split-down"
-            },
-            {
-              "label": "Toggle",
-              "command": "navigation-panel:toggle"
-            },
-            {
-              "label": "List Headers",
-              "command": "navigation-panel:list"
-            },
-            {
-              "label": "Hide",
-              "command": "navigation-panel:hide"
-            },
-            {
-              "type": "separator"
-            },
-            {
-              "label": "Next Header",
-              "command": "navigation-panel:next-header"
-            },
-            {
-              "label": "Previous Header",
-              "command": "navigation-panel:previous-header"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  }
 }
