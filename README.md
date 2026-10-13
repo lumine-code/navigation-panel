@@ -14,6 +14,8 @@ Navigate through custom section markers in text editors with tree view, filterin
 - **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over.
 - **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation.adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
 
+![Navigate a Markdown document through its section outline.](.github/demo.png)
+
 ## Installation
 
 To install `navigation-panel` search for it in the Install pane of the Lumine settings, or run the command `lumine --install lumine-code/navigation-panel`.

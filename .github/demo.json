@@ -1,0 +1,17 @@
+{
+  "title": "navigation-panel",
+  "description": "Navigate a Markdown document through its section outline.",
+  "recordedOn": "2026-10-13",
+  "sourceRevision": "d091a799b659d189a3772fc5b9c4b4dfdb5e18ab",
+  "mode": "normal",
+  "fontSettings": "default",
+  "themeSourceRevision": "6564a9e21899b5541e9c8f8006f9be6d6d72e6ad",
+  "images": [
+    {
+      "file": "demo.png",
+      "label": "Navigate a Markdown document through its section outline.",
+      "width": 1100,
+      "height": 730
+    }
+  ]
+}
