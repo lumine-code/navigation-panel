@@ -1,17 +1,66 @@
 {
   "title": "navigation-panel",
   "description": "Navigate a Markdown document through its section outline.",
-  "recordedOn": "2026-10-13",
-  "sourceRevision": "d091a799b659d189a3772fc5b9c4b4dfdb5e18ab",
+  "recordedOn": "2026-10-14",
+  "sourceRevision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
+  "themeSourceRevision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
   "mode": "normal",
   "fontSettings": "default",
-  "themeSourceRevision": "6564a9e21899b5541e9c8f8006f9be6d6d72e6ad",
+  "scenario": "demo.js",
+  "recipeHash": "b1d6cd978e9376743b58c1ae5bf311573c630e9f4765909669266f3fb6c1699d",
+  "environment": {
+    "platform": "win32",
+    "arch": "x64",
+    "electron": "44.7.0",
+    "chrome": "152.0.7977.130",
+    "devicePixelRatio": 1,
+    "locale": "en-GB",
+    "fontFamily": "Fira Code, Menlo, DejaVu Sans Mono, Consolas, monospace",
+    "fontSize": 14,
+    "themes": ["one-day-syntax", "one-day-ui"]
+  },
+  "viewport": { "width": 1100, "height": 730 },
+  "cornerRadius": 10,
+  "sources": {
+    "editor": {
+      "revision": "8be8f86075ad93df038610d82b3ac6d99329957d",
+      "dirty": true,
+      "workingTreeHash": "0a9458f6e3959fe7a52b2fec76abef27dcbaa9792f192b81ac1e3f6b2be82009"
+    },
+    "package": {
+      "revision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "navigation-panel": {
+      "revision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "language-gfm": {
+      "revision": "be723ccf806fdd4a2a06638f6e881c09a53b4409",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "one-theme": {
+      "revision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+      "dirty": false,
+      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "fixtures": [
+    {
+      "file": "navigation/README.md",
+      "sha256": "749b3da71c0c62bb3b702a90a06f9ab35b45de2ffcac131b48cba786ca6500da"
+    }
+  ],
   "images": [
     {
       "file": "demo.png",
       "label": "Navigate a Markdown document through its section outline.",
       "width": 1100,
-      "height": 730
+      "height": 730,
+      "sha256": "fb16784f49e752df60156fb6c51e1be3a7d31511f1968c5820308544cf30b1f6"
     }
   ]
 }
