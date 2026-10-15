@@ -64,86 +64,117 @@
         "type": "separator"
       },
       {
-        "label": "Copy Text",
-        "command": "navigation-panel:copy-header-text"
+        "label": "Copy Heading Text",
+        "command": "navigation-panel:copy-header-text",
+        "group": "clipboard",
+        "order": 10
       },
       {
         "type": "separator"
       }
     ],
-    ".navigation-panel": [
-      {
-        "type": "separator"
-      },
-      {
-        "label": "All Categories",
-        "command": "navigation-panel:all-categories"
-      },
-      {
-        "label": "None Categories",
-        "command": "navigation-panel:none-categories"
-      },
-      {
-        "label": "Categories Toggle",
-        "command": "navigation-panel:categories-toggle"
-      },
-      {
-        "label": "Info Toggle",
-        "command": "navigation-panel:info-toggle"
-      },
-      {
-        "label": "Success Toggle",
-        "command": "navigation-panel:success-toggle"
-      },
-      {
-        "label": "Warning Toggle",
-        "command": "navigation-panel:warning-toggle"
-      },
-      {
-        "label": "Error Toggle",
-        "command": "navigation-panel:error-toggle"
-      },
-      {
-        "label": "Standard Toggle",
-        "command": "navigation-panel:standard-toggle"
-      },
-      {
-        "type": "separator"
-      },
-      {
-        "label": "Collapse Mode",
-        "command": "navigation-panel:collapse-mode"
-      },
-      {
-        "label": "Expand Mode",
-        "command": "navigation-panel:expand-mode"
-      },
-      {
-        "label": "Auto Collapse",
-        "command": "navigation-panel:auto-collapse"
-      },
-      {
-        "label": "Focus Current",
-        "command": "navigation-panel:focus-current"
-      },
-      {
-        "type": "separator"
-      },
-      {
-        "label": "Text Wrap Toggle",
-        "command": "navigation-panel:text-wrap-toggle"
-      },
-      {
-        "label": "Search Bar Toggle",
-        "command": "navigation-panel:search-bar-toggle"
-      },
-      {
-        "label": "Category Bar Toggle",
-        "command": "navigation-panel:category-bar-toggle"
-      },
-      {
-        "type": "separator"
-      }
-    ]
+    ".navigation-panel": {
+      "groupOrder": [
+        "clipboard",
+        "categories",
+        "structure",
+        "display",
+        "extensions",
+        "close",
+        "visibility"
+      ],
+      "items": [
+        {
+          "label": "Show All Categories",
+          "command": "navigation-panel:all-categories",
+          "group": "categories",
+          "order": 10
+        },
+        {
+          "label": "Hide All Categories",
+          "command": "navigation-panel:none-categories",
+          "group": "categories",
+          "order": 20
+        },
+        {
+          "label": "Toggle All Categories",
+          "command": "navigation-panel:categories-toggle",
+          "group": "categories",
+          "order": 30
+        },
+        {
+          "label": "Toggle Information Headings",
+          "command": "navigation-panel:info-toggle",
+          "group": "categories",
+          "order": 40
+        },
+        {
+          "label": "Toggle Success Headings",
+          "command": "navigation-panel:success-toggle",
+          "group": "categories",
+          "order": 50
+        },
+        {
+          "label": "Toggle Warning Headings",
+          "command": "navigation-panel:warning-toggle",
+          "group": "categories",
+          "order": 60
+        },
+        {
+          "label": "Toggle Error Headings",
+          "command": "navigation-panel:error-toggle",
+          "group": "categories",
+          "order": 70
+        },
+        {
+          "label": "Toggle Uncategorized Headings",
+          "command": "navigation-panel:standard-toggle",
+          "group": "categories",
+          "order": 80
+        },
+        {
+          "label": "Keep All Sections Collapsed",
+          "command": "navigation-panel:collapse-mode",
+          "group": "structure",
+          "order": 10
+        },
+        {
+          "label": "Keep All Sections Expanded",
+          "command": "navigation-panel:expand-mode",
+          "group": "structure",
+          "order": 20
+        },
+        {
+          "label": "Collapse Other Sections Automatically",
+          "command": "navigation-panel:auto-collapse",
+          "group": "structure",
+          "order": 30
+        },
+        {
+          "label": "Expand Current Section Only",
+          "command": "navigation-panel:focus-current",
+          "group": "structure",
+          "order": 40
+        },
+        {
+          "label": "Toggle Heading Wrapping",
+          "command": "navigation-panel:text-wrap-toggle",
+          "group": "display",
+          "order": 10
+        },
+        {
+          "label": "Toggle Search Field",
+          "command": "navigation-panel:search-bar-toggle",
+          "group": "display",
+          "order": 20
+        },
+        {
+          "label": "Toggle Category Filters",
+          "command": "navigation-panel:category-bar-toggle",
+          "group": "display",
+          "order": 30
+        }
+      ]
+    }
   }
 }
