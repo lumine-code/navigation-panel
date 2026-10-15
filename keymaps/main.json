@@ -15,7 +15,7 @@
     "right": "navigation-panel:expand-selected-header",
     "enter": "navigation-panel:open-selected-header",
     "alt-enter": "navigation-panel:open-selected-header-clear-search",
-    "ctrl-enter": "navigation-panel:open-selected-header-add-cursor"
+    "cmdorctrl-enter": "navigation-panel:open-selected-header-add-cursor"
   },
   ".navigation-panel:focus": {
     "space": "navigation-panel:toggle-selected-prog"
