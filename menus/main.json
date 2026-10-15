@@ -23,34 +23,34 @@
           "label": "Navigation Panel",
           "submenu": [
             {
-              "label": "Open",
+              "label": "Open Navigation Panel",
               "command": "navigation-panel:open"
             },
             {
-              "label": "Open and Split Down",
+              "label": "Open Navigation Panel Below Editor",
               "command": "navigation-panel:open-and-split-down"
             },
             {
-              "label": "Toggle",
+              "label": "Toggle Navigation Panel",
               "command": "navigation-panel:toggle"
             },
             {
-              "label": "List Headers",
+              "label": "Go to Heading…",
               "command": "navigation-panel:list"
             },
             {
-              "label": "Hide",
+              "label": "Hide Navigation Panel",
               "command": "navigation-panel:hide"
             },
             {
               "type": "separator"
             },
             {
-              "label": "Next Header",
+              "label": "Go to Next Heading",
               "command": "navigation-panel:next-header"
             },
             {
-              "label": "Previous Header",
+              "label": "Go to Previous Heading",
               "command": "navigation-panel:previous-header"
             }
           ]
