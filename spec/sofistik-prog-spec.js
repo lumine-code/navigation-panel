@@ -22,7 +22,7 @@ describe("SOFiSTiK program switching in the outline", () => {
   async function showPrograms(icons = true) {
     lumine.config.set("navigation-panel.sofistik.icons", icons);
     const { ScannerSofistik } = require("../lib/scanner-sofistik");
-    tree.update(new ScannerSofistik(editor).getHeaders(), { instant: true });
+    tree.update(await new ScannerSofistik(editor).getHeaders(), { instant: true });
     await new Promise((resolve) => requestAnimationFrame(resolve));
     tree.focusHeaderList();
   }
