@@ -95,7 +95,7 @@ describe("navigation-panel marker layer", () => {
 
     it("maps cached headers to marker items with level classes", () => {
       const layer = createLayer(editor, provider);
-      layer.cache.set("data", [
+      markerLayer.setHeaders(layer, [
         { revel: 1, startPoint: { row: 2, column: 0 } },
         { revel: 3, startPoint: { row: 10, column: 0 } },
       ]);
@@ -109,7 +109,10 @@ describe("navigation-panel marker layer", () => {
 
     it("skips headers without a start point", () => {
       const layer = createLayer(editor, provider);
-      layer.cache.set("data", [{ revel: 1 }, { revel: 2, startPoint: { row: 5, column: 0 } }]);
+      markerLayer.setHeaders(layer, [
+        { revel: 1 },
+        { revel: 2, startPoint: { row: 5, column: 0 } },
+      ]);
 
       const items = provider.getItems(layer);
       expect(items.length).toBe(1);
@@ -119,7 +122,7 @@ describe("navigation-panel marker layer", () => {
     it("filters headers deeper than maxDepth", () => {
       lumine.config.set("navigation-panel.marker.maxDepth", 2);
       const layer = createLayer(editor, provider);
-      layer.cache.set("data", [
+      markerLayer.setHeaders(layer, [
         { revel: 1, startPoint: { row: 1, column: 0 } },
         { revel: 2, startPoint: { row: 2, column: 0 } },
         { revel: 3, startPoint: { row: 3, column: 0 } },
@@ -132,6 +135,67 @@ describe("navigation-panel marker layer", () => {
     it("returns no items without cached data", () => {
       const layer = createLayer(editor, provider);
       expect(provider.getItems(layer)).toEqual([]);
+    });
+
+    it("tracks repeated newline edits before the next header scan without polling the producer", () => {
+      const headers = [{ revel: 1, startPoint: { row: 4, column: 0 } }];
+      const layer = createLayer(editor, provider);
+      const service = createNaviService(editor, headers);
+      spyOn(service, "getFlattenHeaders").and.callThrough();
+      const disposable = markerLayer.connect(service);
+      const stopped = jasmine.createSpy("stopped");
+      const stopSubscription = editor.onDidStopChanging(stopped);
+
+      editor.getBuffer().insert([0, 0], "\n");
+      expect(provider.getItems(layer)[0].row).toBe(5);
+      editor.getBuffer().insert([0, 0], "\n");
+      expect(provider.getItems(layer)[0].row).toBe(6);
+      expect(service.getFlattenHeaders).toHaveBeenCalledTimes(1);
+      expect(stopped).not.toHaveBeenCalled();
+      expect(headers[0].startPoint.row).toBe(4);
+
+      // Cursor state can republish wrappers around the preceding scan's Points.
+      service.getFlattenHeaders.and.returnValue([{ ...headers[0] }]);
+      service.emitter.emit("did-update-headers", { editor });
+      expect(provider.getItems(layer)[0].row).toBe(6);
+
+      const oldAnchor = layer.cache.get("anchors")[0].marker;
+      service.getFlattenHeaders.and.returnValue([{ revel: 2, startPoint: { row: 8, column: 0 } }]);
+      service.emitter.emit("did-update-headers", { editor });
+      expect(oldAnchor.isDestroyed()).toBe(true);
+      expect(provider.getItems(layer)).toEqual([
+        { row: 8, cls: "navigation-marker navigation-marker-2" },
+      ]);
+
+      stopSubscription.dispose();
+      disposable.dispose();
+    });
+
+    it("projects moved header anchors through folds and changing soft wraps", () => {
+      editor.setText(
+        ["x".repeat(100), "before", "fold", "hidden", "end", "heading", "tail"].join("\n"),
+      );
+      editor.displayLayer.reset({ softWrapColumn: 10 });
+      editor.foldBufferRowRange(2, 4);
+      const layer = createLayer(editor, provider);
+      const service = createNaviService(editor, [{ revel: 1, startPoint: { row: 5, column: 0 } }]);
+      const disposable = markerLayer.connect(service);
+      const before = provider.getItems(layer)[0].row;
+      expect(before).toBeGreaterThan(5);
+
+      editor.getBuffer().insert([1, 0], "\n\n");
+
+      const moved = provider.getItems(layer)[0].row;
+      expect(moved).toBe(before + 2);
+      expect(moved).toBe(editor.screenPositionForBufferPosition([7, 0]).row);
+
+      editor.displayLayer.reset({ softWrapColumn: 20 });
+      expect(provider.getItems(layer)[0].row).toBe(
+        editor.screenPositionForBufferPosition([7, 0]).row,
+      );
+      expect(provider.getItems(layer)[0].row).toBeLessThan(moved);
+
+      disposable.dispose();
     });
   });
 
@@ -187,11 +251,14 @@ describe("navigation-panel marker layer", () => {
       const disposable = markerLayer.connect(service);
       expect(markerLayer.naviService).toBe(service);
       layer.update.calls.reset();
+      const bufferMarkers = layer.cache.get("bufferMarkers");
+      expect(bufferMarkers.getMarkers().length).toBe(1);
 
       disposable.dispose();
       expect(markerLayer.naviService).toBe(null);
       expect(markerLayer.getHeaders(editor)).toEqual([]);
       expect(layer.cache.get("data")).toEqual([]);
+      expect(bufferMarkers.getMarkers()).toEqual([]);
       expect(layer.update).toHaveBeenCalledTimes(1);
     });
 
@@ -266,9 +333,12 @@ describe("navigation-panel marker layer", () => {
       const provider = mainModule.provideMarkerLayer();
       const layer = createLayer(editor, provider);
       expect(markerLayer.layers.get(editor)).toBe(layer);
+      const bufferMarkers = layer.cache.get("bufferMarkers");
 
       layer.disposables.dispose();
       expect(markerLayer.layers.has(editor)).toBe(false);
+      expect(bufferMarkers.isDestroyed()).toBe(true);
+      expect(editor.getBuffer().getMarkerLayer(bufferMarkers.id)).toBeUndefined();
     });
   });
 });
