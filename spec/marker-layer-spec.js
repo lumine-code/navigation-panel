@@ -154,6 +154,18 @@ describe("navigation-panel marker layer", () => {
       expect(markerLayer.getHeaders(editor)).toEqual([]);
     });
 
+    it("seeds existing navigation layers on connection", () => {
+      const headers = [{ revel: 2, startPoint: { row: 4, column: 0 } }];
+      const layer = createLayer(editor);
+      const service = createNaviService(editor, headers);
+      const disposable = markerLayer.connect(service);
+
+      expect(layer.cache.get("data")).toEqual(headers);
+      expect(layer.update).toHaveBeenCalledTimes(1);
+
+      disposable.dispose();
+    });
+
     it("pushes fresh headers into the navigation layer on header updates", () => {
       const headers = [{ revel: 2, startPoint: { row: 4, column: 0 } }];
       const service = createNaviService(editor, headers);
@@ -170,13 +182,82 @@ describe("navigation-panel marker layer", () => {
     });
 
     it("detaches the service on disposal", () => {
-      const service = createNaviService(editor, []);
+      const layer = createLayer(editor);
+      const service = createNaviService(editor, [{ revel: 1, startPoint: { row: 4, column: 0 } }]);
       const disposable = markerLayer.connect(service);
       expect(markerLayer.naviService).toBe(service);
+      layer.update.calls.reset();
 
       disposable.dispose();
       expect(markerLayer.naviService).toBe(null);
       expect(markerLayer.getHeaders(editor)).toEqual([]);
+      expect(layer.cache.get("data")).toEqual([]);
+      expect(layer.update).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores updates and disposal from a replaced service connection", () => {
+      const layer = createLayer(editor);
+      const firstService = createNaviService(editor, [
+        { revel: 1, startPoint: { row: 2, column: 0 } },
+      ]);
+      const nextHeaders = [{ revel: 2, startPoint: { row: 6, column: 0 } }];
+      const nextService = createNaviService(editor, nextHeaders);
+      const firstConnection = markerLayer.connect(firstService);
+      const nextConnection = markerLayer.connect(nextService);
+      layer.update.calls.reset();
+
+      firstService.emitter.emit("did-update-headers", { editor });
+      firstConnection.dispose();
+
+      expect(markerLayer.naviService).toBe(nextService);
+      expect(layer.cache.get("data")).toEqual(nextHeaders);
+      expect(layer.update).not.toHaveBeenCalled();
+
+      nextConnection.dispose();
+      expect(layer.cache.get("data")).toEqual([]);
+      expect(layer.update).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps a newer connection when the same service object reconnects", () => {
+      const headers = [{ revel: 1, startPoint: { row: 3, column: 0 } }];
+      const layer = createLayer(editor);
+      const service = createNaviService(editor, headers);
+      const firstConnection = markerLayer.connect(service);
+      const nextConnection = markerLayer.connect(service);
+      layer.update.calls.reset();
+
+      firstConnection.dispose();
+
+      expect(markerLayer.naviService).toBe(service);
+      expect(layer.cache.get("data")).toEqual(headers);
+      expect(layer.update).not.toHaveBeenCalled();
+
+      nextConnection.dispose();
+    });
+
+    it("retains cached headers for inactive editors during normal document switches", () => {
+      const headers = [{ revel: 1, startPoint: { row: 3, column: 0 } }];
+      const otherHeaders = [{ revel: 2, startPoint: { row: 1, column: 0 } }];
+      const otherEditor = lumine.workspace.buildTextEditor();
+      otherEditor.setText("first\nsecond");
+      const layer = createLayer(editor);
+      const otherLayer = createLayer(otherEditor);
+      const service = createNaviService(editor, headers);
+      const disposable = markerLayer.connect(service);
+      layer.update.calls.reset();
+      otherLayer.update.calls.reset();
+      service.getEditor = () => otherEditor;
+      service.getFlattenHeaders = () => otherHeaders;
+
+      service.emitter.emit("did-update-headers", { editor: otherEditor });
+
+      expect(layer.cache.get("data")).toEqual(headers);
+      expect(layer.update).not.toHaveBeenCalled();
+      expect(otherLayer.cache.get("data")).toEqual(otherHeaders);
+      expect(otherLayer.update).toHaveBeenCalledTimes(1);
+
+      disposable.dispose();
+      otherEditor.destroy();
     });
   });
 
