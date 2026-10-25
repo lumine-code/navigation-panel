@@ -67,6 +67,37 @@ describe("navigation-panel editor markers", () => {
     expect(decorations().some(([id]) => id.endsWith(`-${marker.id}`))).toBe(false);
   }
 
+  it("clears headers and markers without scanning while None is selected, then resumes", async () => {
+    await lumine.packages.activatePackage("language-javascript");
+    const grammar = lumine.grammars.grammarForScopeName("source.js");
+    lumine.grammars.assignGrammar(editor, grammar);
+    const { EditorHeaderObserver } = require("../lib/editor-adapter");
+    const observer = new EditorHeaderObserver(editor, () => {}, {
+      traceVisible: () => false,
+      markers,
+    });
+    try {
+      await conditionPromise(() => observer.headers?.length === 1);
+      const scan = spyOn(editor, "scan").and.callThrough();
+      const read = spyOn(editor, "getText").and.callThrough();
+
+      lumine.grammars.assignGrammar(editor, lumine.grammars.nullGrammar);
+      expect(observer.headers).toBeNull();
+      expect(layerMarkers(1)).toEqual([]);
+      expect(editor.getLastCursor().navigationItems).toEqual([]);
+      editor.buffer.emitDidStopChangingEvent();
+      await observer.update({ instant: true });
+      expect(scan).not.toHaveBeenCalled();
+      expect(read).not.toHaveBeenCalled();
+
+      lumine.grammars.assignGrammar(editor, grammar);
+      await conditionPromise(() => observer.headers?.length === 1);
+      expect(layerMarkers(1).length).toBe(1);
+    } finally {
+      observer.destroy();
+    }
+  });
+
   it("keeps the background through title insertion, deletion, and replacement before scanning", () => {
     const marker = layerMarkers(1)[0];
     const rescan = spyOn(markers, "refresh").and.callThrough();

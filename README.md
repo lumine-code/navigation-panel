@@ -11,7 +11,7 @@ Navigate through custom section markers in text editors with tree view, filterin
 - **Category markers**: tag headers as info, success, warning, or error.
 - **Section folding**: fold/unfold sections and view as table of contents.
 - **Scrollbar markers**: shows the document headers on the scrollbar and minimap via the marker hub.
-- **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over.
+- **Multiple scopes**: LaTeX, Python, Markdown, JavaScript, and more. Individual built-in scanners can be disabled in settings to let a community adapter take over. Choosing None as the grammar clears source headers and markers without scanning the document.
 - **Adapter support**: external packages can provide navigation headers for any pane item type via the `navigation.adapter` service. Used by [pdf-view](https://github.com/lumine-code/pdf-view), [image-editor](https://github.com/lumine-code/image-editor), and [jupyter-view](https://github.com/lumine-code/jupyter-view).
 
 ![Navigate a Markdown document through its section outline.](.github/demo.png)
