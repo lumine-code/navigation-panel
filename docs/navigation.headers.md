@@ -78,6 +78,8 @@ module.exports = {
 
 `getEditor()` can return a non-editor pane item, because an adapter may have supplied the headers. Guard before calling `TextEditor` methods on it.
 
+Built-in scans may return a bounded outline. Header arrays and `getFlattenHeaders()` expose a non-enumerable `outlineStatus` object with `complete`, `omittedRows`, `headingLimit`, and `labelPreviews`. An omitted row count refers to complete regular-expression contexts above the 65,536-unit input budget; reStructuredText contexts span two rows. `headingLimit` means scanning stopped after retaining 5,000 headings, so the number of later headings is unknown. Labels above 1,024 UTF-16 units are visibly elided, and Copy Header Text copies the displayed caption. Source positions for retained headings are not truncated.
+
 `getFlattenHeaders()` returns every header in tree order and retains each header's `children`. `level` is the scanner or adapter's declared level; `revel` is its actual tree depth. Subscription callbacks receive the pane item first and the nested header tree second, or `null` when no supported headers are available.
 
 `id` identifies an entry across tree, search, and modal-list updates. Adapters can supply stable IDs; otherwise the panel generates unique IDs from locations or labels and tree order.

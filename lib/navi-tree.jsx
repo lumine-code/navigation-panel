@@ -392,6 +392,11 @@ class NavigationTree {
         on={{ focusout: this.resetSelectedHeaderOnFocusOut }}
       >
         {searchBar}
+        {this.headers?.outlineStatus && !this.headers.outlineStatus.complete ? (
+          <div class="navigation-outline-status text-warning" role="status">
+            {`Incomplete outline: ${this.headers.outlineStatus.omittedRows} oversized row context(s) omitted${this.headers.outlineStatus.headingLimit ? "; first 5000 headings shown" : ""}.`}
+          </div>
+        ) : null}
         <div class="navigation-scroller" ref="navigationScroller" tabIndex={-1}>
           {naviList}
         </div>

@@ -4,6 +4,8 @@ Document outline and navigation panel.
 
 Navigate through custom section markers in text editors with tree view, filtering, and folding support.
 
+Built-in scanners read immutable snapshots in cancellable batches. Regular-expression scanners consume complete row contexts up to 65,536 UTF-16 code units (two rows for reStructuredText); larger contexts are omitted instead of matching a misleading truncated prefix. BibTeX uses a bounded streaming lexer and can skip arbitrarily large balanced entry bodies. Labels are visibly elided after 1,024 units and at most 5,000 headings are retained. The panel identifies incomplete outlines and reports omitted row contexts or the heading limit; navigation positions remain exact for the displayed headings.
+
 ## Features
 
 - **Tree navigation**: browse document structure with collapsible sections.

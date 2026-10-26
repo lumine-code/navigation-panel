@@ -25,7 +25,7 @@ describe("SOFiSTiK heading scans", () => {
     lumine.config.unset("navigation-panel.editor.maxHeadingDepth");
   });
 
-  it("searches sparse source in bounded native worker windows", async () => {
+  it("searches sparse snapshots without eager full-result lists or legacy scans", async () => {
     const lines = Array(12000).fill("NODE 1 X 0 Y 0 Z 0");
     lines[0] = "!$! First";
     lines[11999] = "!$! Last";
@@ -38,17 +38,8 @@ describe("SOFiSTiK heading scans", () => {
 
     expect(headers.map(({ text }) => text)).toEqual(["First", "Last"]);
     expect(headers.map(({ startPoint }) => startPoint.row)).toEqual([0, 11999]);
-    expect(scan.calls.count()).toBe(2);
-    expect(find.calls.count()).toBeGreaterThan(1);
-    let nextRow = 0;
-    for (const [, [[firstRow, firstColumn], [lastRow, lastColumn]]] of find.calls.allArgs()) {
-      expect(firstRow).toBe(nextRow);
-      expect(firstColumn).toBe(0);
-      expect(lastColumn).toBe(Infinity);
-      expect(lastRow - firstRow).toBeLessThanOrEqual(2047);
-      nextRow = lastRow + 1;
-    }
-    expect(nextRow).toBe(lines.length);
+    expect(scan).not.toHaveBeenCalled();
+    expect(find).not.toHaveBeenCalled();
   });
 
   it("preserves define nesting, heading order and HEAD lookahead across windows", async () => {
@@ -111,30 +102,22 @@ describe("SOFiSTiK heading scans", () => {
 
   it("stops an aborted search before parsing or queuing another window", async () => {
     editor.setText(Array(10000).fill("!$! Heading").join("\n"));
-    let finish;
-    const find = spyOn(editor.getBuffer(), "findAllInRange").and.callFake(
-      () => new Promise((resolve) => (finish = resolve)),
-    );
-    const scan = spyOn(editor, "scanInBufferRange").and.callThrough();
+    const scanner = new ScannerSofistik(editor);
+    const parse = spyOn(scanner, "parse").and.callThrough();
     const controller = new AbortController();
-    const pending = new ScannerSofistik(editor).getHeaders({ signal: controller.signal });
+    const pending = scanner.getHeaders({ signal: controller.signal });
+    const before = parse.calls.count();
     controller.abort();
-    finish([]);
 
     await expectAsync(pending).toBeRejectedWith(jasmine.objectContaining({ name: "AbortError" }));
-    expect(find.calls.count()).toBe(1);
-    expect(scan).not.toHaveBeenCalled();
+    expect(parse.calls.count()).toBe(before);
+    expect(before).toBeLessThan(5000);
   });
 
   it("rejects an edited snapshot even when called without an observer signal", async () => {
-    editor.setText("!$! Before");
-    let finish;
-    spyOn(editor.getBuffer(), "findAllInRange").and.callFake(
-      () => new Promise((resolve) => (finish = resolve)),
-    );
+    editor.setText("!$! Before\n" + "body\n".repeat(20000));
     const pending = new ScannerSofistik(editor).getHeaders();
     editor.insertText("changed");
-    finish([]);
 
     await expectAsync(pending).toBeRejectedWith(jasmine.objectContaining({ name: "AbortError" }));
   });
