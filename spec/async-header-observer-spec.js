@@ -84,6 +84,28 @@ describe("Asynchronous navigation headings", () => {
     expect(publish).toHaveBeenCalledWith(latest, { instant: true });
   });
 
+  it("resumes after None without waiting for an obsolete scanner to settle", async () => {
+    await lumine.packages.activatePackage("language-javascript");
+    const grammar = lumine.grammars.grammarForScopeName("source.js");
+    lumine.grammars.assignGrammar(editor, grammar);
+    await conditionPromise(() => !observer.isUpdating);
+    markers.refresh.calls.reset();
+    publish.calls.reset();
+    const scan = await startDelayedScan();
+
+    lumine.grammars.assignGrammar(editor, lumine.grammars.nullGrammar);
+    expect(observer.headers).toBeNull();
+    expect(scan.signal.aborted).toBe(true);
+    lumine.grammars.assignGrammar(editor, grammar);
+    await conditionPromise(() => observer.headers?.length === 0 && !observer.isUpdating);
+    const latest = observer.headers;
+    expect(markers.refresh).toHaveBeenCalledWith(editor, latest);
+
+    await scan.finish();
+    expect(observer.headers).toBe(latest);
+    expect(publish.calls.mostRecent().args[0]).toBe(latest);
+  });
+
   it("cancels standalone marker scans when their markers are cleared", async () => {
     const { EditorMarkers } = require("../lib/editor-markers");
     const { ScannerSofistik } = require("../lib/scanner-sofistik");

@@ -98,6 +98,25 @@ describe("navigation-panel editor markers", () => {
     }
   });
 
+  it("clears and resumes the package's markers when an inactive document changes grammar", async () => {
+    await lumine.packages.activatePackage("language-javascript");
+    const grammar = lumine.grammars.grammarForScopeName("source.js");
+    const main = lumine.packages.getActivePackage("navigation-panel").mainModule;
+    main.getNavigationTree();
+    lumine.grammars.assignGrammar(editor, grammar);
+    await conditionPromise(() => layerMarkers(1).length === 1);
+    const active = await lumine.workspace.open();
+    try {
+      lumine.grammars.assignGrammar(editor, lumine.grammars.nullGrammar);
+      expect(layerMarkers(1)).toEqual([]);
+      lumine.grammars.assignGrammar(editor, grammar);
+      await conditionPromise(() => layerMarkers(1).length === 1);
+      expect(lumine.workspace.getActiveTextEditor()).toBe(active);
+    } finally {
+      active.destroy();
+    }
+  });
+
   it("keeps the background through title insertion, deletion, and replacement before scanning", () => {
     const marker = layerMarkers(1)[0];
     const rescan = spyOn(markers, "refresh").and.callThrough();
