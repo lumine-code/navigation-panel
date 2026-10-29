@@ -1026,8 +1026,16 @@ describe("navigation-panel", () => {
   });
 
   describe("list auto-scroll", () => {
-    const { NavigationTree } = require("../lib/navi-tree");
-    let tree;
+    let NavigationTree, tree;
+
+    beforeEach(() => {
+      ({ NavigationTree } = require("../lib/navi-tree"));
+      // Exercise animation independently of the host's accessibility preference.
+      const media = window.matchMedia.bind(window);
+      spyOn(window, "matchMedia").and.callFake((query) =>
+        query === "(prefers-reduced-motion: reduce)" ? { matches: false } : media(query),
+      );
+    });
 
     function installAnimationFrameHarness() {
       let nextId = 1;
