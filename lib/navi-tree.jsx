@@ -430,6 +430,13 @@ class NavigationTree {
     etch.update(this);
   }
 
+  updateState(items, props = {}) {
+    // A prior initial render may have had no current item to reveal. That
+    // one-off instant request must not turn later source tracking into jumps.
+    this.instant = props.instant === true;
+    return this.updateVisibility(items, props);
+  }
+
   updateVisibility(items, props = {}) {
     if (Object.hasOwn(props, "scrollDirection")) {
       this.scrollDirection = props.scrollDirection;
@@ -437,7 +444,11 @@ class NavigationTree {
     if (this.searches !== null) {
       const affectedItems = new Set(items);
       items = this.searches.filter((item) => affectedItems.has(item.sourceItem));
-      for (const item of items) item.visibility = item.sourceItem.visibility;
+      for (const item of items) {
+        item.visibility = item.sourceItem.visibility;
+        item.currentCount = item.sourceItem.currentCount;
+        item.stackCount = item.sourceItem.stackCount;
+      }
     }
 
     if (this.visibility === 2) {
@@ -526,7 +537,10 @@ class NavigationTree {
     }
 
     // If instant mode, use direct scroll without animation
-    if (this.instant) {
+    if (
+      this.instant ||
+      this.element.ownerDocument.defaultView.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       this.instant = false;
       this.cancelScrollAnimation();
       container.scrollTop = targetScrollTop;

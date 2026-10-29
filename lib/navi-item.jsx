@@ -52,6 +52,8 @@ class NavigationItem {
   }
 
   updateVisibility() {
+    this.refs.tree?.classList.toggle("stack", this.item.stackCount > 0);
+    this.refs.block?.classList.toggle("current", this.item.currentCount > 0);
     // collapseWork is a one-render command. Its copied value can outlive the
     // tree's readAfterUpdate reset, so only the persistent mode responds to
     // later viewport-only updates.
@@ -192,9 +194,10 @@ class NavigationItem {
     if (this.refs.tree) {
       this.refs.tree.navigationTreeView = this;
     }
-    // Viewport updates own this class outside Etch. Reapply it after a render
-    // so switching editors cannot leave the trace from the previous viewport
-    // when Etch finds the rest of the cached class attribute unchanged.
+    // Incremental tracking owns these classes outside Etch. Reapply them after
+    // a render even when the cached virtual class attribute has not changed.
+    this.refs.tree?.classList.toggle("stack", this.item.stackCount > 0);
+    this.refs.block?.classList.toggle("current", this.item.currentCount > 0);
     this.refs.block?.classList.toggle("visible", this.hasVisibleTrace());
   }
 }

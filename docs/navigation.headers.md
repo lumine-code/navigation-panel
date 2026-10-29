@@ -48,6 +48,9 @@ type Header = {
   endPoint?: { row: number; column: number };
   classList?: string[];
   children?: Header[];
+  currentCount?: number;
+  stackCount?: number;
+  visibility?: number;
 };
 ```
 
@@ -86,7 +89,7 @@ Built-in scans may return a bounded outline. Header arrays and `getFlattenHeader
 
 `startPoint` and `endPoint` carry buffer positions for text-editor headers. Adapter headers may omit positions, and any supplied positions belong to the pane item's own document. Check both the pane item and the point before treating it as a text-editor position.
 
-The list is replaced wholesale on each update; do not diff against a previous array by identity.
+Structural updates replace the list. Current, ancestor and visible state updates may preserve the tree and its entry identities; they still notify subscribers with the updated state. Do not use array identity alone to decide whether the reported outline changed.
 
 ## Teardown
 

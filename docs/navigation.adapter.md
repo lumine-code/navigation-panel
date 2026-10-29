@@ -32,7 +32,19 @@ type NavigationAdapter = {
   handlesItem(item: object): boolean;
   observeHeaders(
     item: object,
-    callback: (headers: Header[], options?: { instant?: boolean }) => void,
+    callback: (
+      headers: Header[],
+      options?: {
+        instant?: boolean;
+        scrollDirection?: number;
+        stateChanges?: Array<{
+          path: number[];
+          currentCount?: number;
+          stackCount?: number;
+          visibility?: number;
+        }>;
+      },
+    ) => void,
   ): Disposable;
   navigateTo(
     item: object,
@@ -108,6 +120,8 @@ module.exports = {
 `observeHeaders` is a **push**: call the callback once immediately with the current list, then again on every change. The panel does not poll.
 
 Pass `{ instant: true }` when the list is already known and no scan is needed. It suppresses the panel's debounce so the outline appears without the usual settling delay — right for a list you can produce synchronously, wrong for one you compute.
+
+When only current, ancestor or visible state changes, reuse the current header tree and pass `stateChanges`. Each change names an entry by its zero-based `path` through the nested arrays and supplies the changed state fields. The panel updates those rows and their ancestors without rebuilding the outline or its search results. Publish a full tree when its hierarchy or other metadata changes. A numeric `scrollDirection` can carry the source viewport's scroll delta so tracking follows its leading or trailing visible heading. Tracking updates animate by default; reserve `instant: true` for an intentional immediate reveal. The panel honors reduced-motion preferences and cancels its animation when the user scrolls or presses the pointer in the panel.
 
 An adapter that is registered while its item is already active is **subscribed immediately**, so a package activating late still populates the panel without the user switching tabs.
 
