@@ -8,7 +8,8 @@
   .navigation-search {
     display: block;
     position: relative;
-    margin: 0.375em;
+    padding: 0.375em;
+    border-bottom: 1px solid var(--base-border-color);
 
     lumine-text-editor {
       font-size: var(--ui-font-size);
@@ -17,8 +18,8 @@
     .icon-remove-close {
       display: none;
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: calc(0.375em + 4px);
+      right: calc(0.375em + 4px);
     }
 
     &:hover .icon-remove-close {
