@@ -1,9 +1,9 @@
 {
   "title": "navigation-panel",
   "description": "Navigate a Markdown document through its section outline.",
-  "recordedOn": "2026-10-14",
-  "sourceRevision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
-  "themeSourceRevision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+  "recordedOn": "2026-10-30",
+  "sourceRevision": "075cf9ca1e201e81325bdc9bb5fa4b45d5d7b3c6",
+  "themeSourceRevision": "484213c82bbf567e2cb7cd5f85c5d73965346809",
   "mode": "normal",
   "fontSettings": "default",
   "scenario": "demo.js",
@@ -11,8 +11,8 @@
   "environment": {
     "platform": "win32",
     "arch": "x64",
-    "electron": "44.7.0",
-    "chrome": "152.0.7977.130",
+    "electron": "45.0.0",
+    "chrome": "156.0.8078.48",
     "devicePixelRatio": 1,
     "locale": "en-GB",
     "fontFamily": "Fira Code, Menlo, DejaVu Sans Mono, Consolas, monospace",
@@ -21,29 +21,30 @@
   },
   "viewport": { "width": 1100, "height": 730 },
   "cornerRadius": 10,
+  "privacy": { "version": 1, "location": "neutral", "textChecked": true },
   "sources": {
     "editor": {
-      "revision": "8be8f86075ad93df038610d82b3ac6d99329957d",
+      "revision": "da1fe78142f396c784aa18569cfd04ba7719fb09",
       "dirty": true,
-      "workingTreeHash": "0a9458f6e3959fe7a52b2fec76abef27dcbaa9792f192b81ac1e3f6b2be82009"
+      "workingTreeHash": "7739e7077b43ac8e2b3581b9960d1310fd4edee7745e9edf5f347ee8b04dc38a"
     },
     "package": {
-      "revision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
-      "dirty": false,
-      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "revision": "075cf9ca1e201e81325bdc9bb5fa4b45d5d7b3c6",
+      "dirty": true,
+      "workingTreeHash": "294da1ef580e99133465abe26d7d37020da60ba37e56f0cb5a67b13d1fb29aec"
     },
     "navigation-panel": {
-      "revision": "b072372ed6a71373ce7399ae60c9cb9aa537f965",
-      "dirty": false,
-      "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "revision": "075cf9ca1e201e81325bdc9bb5fa4b45d5d7b3c6",
+      "dirty": true,
+      "workingTreeHash": "294da1ef580e99133465abe26d7d37020da60ba37e56f0cb5a67b13d1fb29aec"
     },
     "language-gfm": {
-      "revision": "be723ccf806fdd4a2a06638f6e881c09a53b4409",
+      "revision": "e2eca2b15d854161c670e5b8815ad48e636957b7",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     "one-theme": {
-      "revision": "7fbd047a87ecf1367c896b19ff270cdc28d319f7",
+      "revision": "484213c82bbf567e2cb7cd5f85c5d73965346809",
       "dirty": false,
       "workingTreeHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
@@ -60,7 +61,7 @@
       "label": "Navigate a Markdown document through its section outline.",
       "width": 1100,
       "height": 730,
-      "sha256": "fb16784f49e752df60156fb6c51e1be3a7d31511f1968c5820308544cf30b1f6"
+      "sha256": "f355d47fde2572fe17e90229e882924080ef8dc5bfda51811f21a41581faf2d3"
     }
   ]
 }

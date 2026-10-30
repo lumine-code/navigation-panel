@@ -873,7 +873,7 @@ class NavigationTree {
   }
 
   getIconName() {
-    return "list-unordered";
+    return "milestone";
   }
 
   getDefaultLocation() {
