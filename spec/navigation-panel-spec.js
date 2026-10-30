@@ -44,6 +44,27 @@ describe("navigation-panel", () => {
     expect(panelCommands.some(({ name }) => name === command)).toBe(true);
   });
 
+  it("reports menu choice state from the live panel while leaving bulk operations as actions", () => {
+    const tree = mainModule.getNavigationTree();
+    const state = (command) => lumine.commands.getCommandState(command, { target: tree.element });
+    tree.categoriesChange(["info"], true);
+    expect(state("navigation-panel:info-toggle")).toEqual({ type: "checkbox", checked: true });
+    tree.categoriesChange(["info"], false);
+    expect(state("navigation-panel:info-toggle")).toEqual({ type: "checkbox", checked: false });
+    expect(state("navigation-panel:categories-toggle")).toBeNull();
+    expect(
+      lumine.commands.getCommandState("navigation-panel:info-toggle", { target: workspaceElement }),
+    ).toBeNull();
+
+    lumine.commands.dispatch(tree.element, "navigation-panel:expand-mode");
+    expect(state("navigation-panel:expand-mode")).toEqual({ type: "radio", checked: true });
+    expect(state("navigation-panel:collapse-mode")).toEqual({ type: "radio", checked: false });
+    expect(state("navigation-panel:auto-collapse")).toEqual({ type: "radio", checked: false });
+    lumine.commands.dispatch(tree.element, "navigation-panel:auto-collapse");
+    expect(state("navigation-panel:expand-mode").checked).toBe(false);
+    expect(state("navigation-panel:auto-collapse").checked).toBe(true);
+  });
+
   it("puts the configured default side first", () => {
     const tree = mainModule.getNavigationTree();
     lumine.config.set("navigation-panel.panel.defaultSide", "left");

@@ -79,36 +79,43 @@ class NavigationTree {
         },
         "navigation-panel:info-toggle": {
           description: "Show or hide the headers marked as information.",
+          checked: () => this.info,
           didDispatch: () => {
             this.categoriesChange(["info"]);
           },
         },
         "navigation-panel:success-toggle": {
           description: "Show or hide the headers marked as successes.",
+          checked: () => this.success,
           didDispatch: () => {
             this.categoriesChange(["success"]);
           },
         },
         "navigation-panel:warning-toggle": {
           description: "Show or hide the headers marked as warnings.",
+          checked: () => this.warning,
           didDispatch: () => {
             this.categoriesChange(["warning"]);
           },
         },
         "navigation-panel:error-toggle": {
           description: "Show or hide the headers marked as errors.",
+          checked: () => this.error,
           didDispatch: () => {
             this.categoriesChange(["error"]);
           },
         },
         "navigation-panel:standard-toggle": {
           description: "Show or hide the headers carrying no category at all.",
+          checked: () => this.standard,
           didDispatch: () => {
             this.categoriesChange(["standard"]);
           },
         },
         "navigation-panel:collapse-mode": {
           description: "Keep every section in the panel collapsed.",
+          type: "radio",
+          checked: () => this.visibility === 0,
           didDispatch: () => {
             this.visibility = this.collapseWork = 0;
             etch.update(this);
@@ -116,6 +123,8 @@ class NavigationTree {
         },
         "navigation-panel:expand-mode": {
           description: "Keep every section in the panel expanded.",
+          type: "radio",
+          checked: () => this.visibility === 1,
           didDispatch: () => {
             this.visibility = this.collapseWork = 1;
             etch.update(this);
@@ -123,6 +132,8 @@ class NavigationTree {
         },
         "navigation-panel:auto-collapse": {
           description: "Collapse the sections the cursor is not in.",
+          type: "radio",
+          checked: () => this.visibility === 2,
           didDispatch: () => {
             this.visibility = 2;
             etch.update(this);
@@ -137,6 +148,7 @@ class NavigationTree {
         },
         "navigation-panel:text-wrap-toggle": {
           description: "Wrap a long header in the panel rather than clipping it.",
+          checked: () => this.textWrap,
           didDispatch: () => {
             this.textWrap = !this.textWrap;
             etch.update(this);
@@ -413,6 +425,7 @@ class NavigationTree {
         this[className] = value;
       }
     }
+    lumine.commands.invalidateAvailability({ target: this.element });
     etch.update(this);
   }
 
