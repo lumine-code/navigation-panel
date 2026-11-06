@@ -35,6 +35,7 @@ type NavigationAdapter = {
     callback: (
       headers: Header[],
       options?: {
+        loading?: boolean;
         instant?: boolean;
         scrollDirection?: number;
         stateChanges?: Array<{
@@ -119,9 +120,13 @@ module.exports = {
 
 `observeHeaders` is a **push**: call the callback once immediately with the current list, then again on every change. The panel does not poll.
 
-Pass `{ instant: true }` when the list is already known and no scan is needed. It suppresses the panel's debounce so the outline appears without the usual settling delay — right for a list you can produce synchronously, wrong for one you compute.
+The panel positions a newly observed outline immediately. Subsequent tracking updates animate by default. Pass `{ instant: true }` for an intentional immediate reveal after initialization; it controls scrolling rather than whether the headers were computed synchronously.
 
-When only current, ancestor or visible state changes, reuse the current header tree and pass `stateChanges`. Each change names an entry by its zero-based `path` through the nested arrays and supplies the changed state fields. The panel updates those rows and their ancestors without rebuilding the outline or its search results. Publish a full tree when its hierarchy or other metadata changes. A numeric `scrollDirection` can carry the source viewport's scroll delta so tracking follows its leading or trailing visible heading. Tracking updates animate by default; reserve `instant: true` for an intentional immediate reveal. The panel honors reduced-motion preferences and cancels its animation when the user scrolls or presses the pointer in the panel.
+An adapter that loads an outline in stages sends `{ loading: true }` with its first callback, including an empty placeholder, and `{ loading: false }` with the completed snapshot. While loading, omitted `loading` fields retain the previous value. The panel keeps all initial positioning immediate through the partial snapshots, current-entry updates and final DOM update, then enables smooth tracking. A later `loading: true` starts a new initialization, for example after replacing the document in an existing pane item. Adapters with a complete first snapshot can omit `loading` entirely.
+
+The final callback may use `stateChanges: []` when only the loading state changed. Initialization still waits for pending outline rendering and automatic expansion. Switching items or retiring a provider cancels the previous observation's initialization; its late results cannot move the new outline.
+
+When only current, ancestor or visible state changes, reuse the current header tree and pass `stateChanges`. Each change names an entry by its zero-based `path` through the nested arrays and supplies the changed state fields. The panel updates those rows and their ancestors without rebuilding the outline or its search results. Publish a full tree when its hierarchy or other metadata changes. A numeric `scrollDirection` can carry the source viewport's scroll delta so tracking follows its leading or trailing visible heading. The panel honors reduced-motion preferences and cancels its animation when the user scrolls or presses the pointer in the panel.
 
 An adapter that is registered while its item is already active is **subscribed immediately**, so a package activating late still populates the panel without the user switching tabs.
 

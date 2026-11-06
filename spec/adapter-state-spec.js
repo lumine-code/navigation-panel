@@ -49,6 +49,7 @@ describe("incremental adapter tracking", () => {
     pane.addItem(item);
     pane.activateItem(item);
     await lumine.views.getNextUpdatePromise();
+    await flushMicrotasks();
   });
 
   afterEach(async () => {

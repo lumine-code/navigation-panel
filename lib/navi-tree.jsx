@@ -33,6 +33,8 @@ class NavigationTree {
     this.headers = null;
     this.searches = null;
     this.instant = false;
+    this.initializing = false;
+    this.sourceRevision = 0;
     this.scrollAnimationID = null;
     this.scrollTargetTop = null;
     this.scrollVirtualTop = null;
@@ -440,7 +442,26 @@ class NavigationTree {
         this.scrollDirection = props.scrollDirection;
       }
     }
-    etch.update(this);
+    return etch.update(this);
+  }
+
+  resetSource() {
+    SCROLL_SKIP = 0;
+    this.sourceRevision++;
+    this.initializing = false;
+    this.instant = false;
+    this.scrollDirection = 0;
+    this.cancelScrollAnimation();
+  }
+
+  beginInitialization() {
+    this.resetSource();
+    this.initializing = true;
+  }
+
+  endInitialization() {
+    this.initializing = false;
+    this.instant = false;
   }
 
   updateState(items, props = {}) {
@@ -465,18 +486,22 @@ class NavigationTree {
     }
 
     if (this.visibility === 2) {
-      return this.updateAutoCollapseVisibility(items).then(() => this.scrollToCurrent());
+      const revision = this.sourceRevision;
+      return this.updateAutoCollapseVisibility(items, revision).then(() => {
+        if (!this.destroyed && this.sourceRevision === revision) this.scrollToCurrent();
+      });
     }
     for (const item of items) getNavigationItemView(item)?.updateVisibility();
     this.scrollToCurrent();
     return null;
   }
 
-  async updateAutoCollapseVisibility(items) {
+  async updateAutoCollapseVisibility(items, revision) {
     // Parent views can create or destroy descendant views. Resolve each view
     // only after the preceding ancestor update has settled so Etch operations
     // never race over the same subtree.
     for (const item of items) {
+      if (this.destroyed || this.sourceRevision !== revision) return;
       const update = getNavigationItemView(item)?.updateVisibility();
       if (update?.then) await update;
     }
@@ -515,7 +540,7 @@ class NavigationTree {
   }
 
   scrollToElement(element) {
-    if (this.instant === null) {
+    if (this.instant === null && !this.initializing) {
       this.cancelScrollAnimation();
       this.instant = false;
       return; // do not scroll
@@ -551,6 +576,7 @@ class NavigationTree {
 
     // If instant mode, use direct scroll without animation
     if (
+      this.initializing ||
       this.instant ||
       this.element.ownerDocument.defaultView.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
