@@ -3,6 +3,13 @@ const etch = require("@lumine-code/etch");
 
 const itemViews = new WeakMap();
 
+function categoryIsVisible(item, states) {
+  const category = ["info", "success", "warning", "error"].find((name) =>
+    item.classList.includes(name),
+  );
+  return Boolean(states[category || "standard"]);
+}
+
 class NavigationItem {
   constructor(props) {
     this.updateProps(props);
@@ -76,25 +83,7 @@ class NavigationItem {
   }
 
   render() {
-    if (this.item.classList.includes("info")) {
-      if (!this.states.info) {
-        return <div />;
-      }
-    } else if (this.item.classList.includes("success")) {
-      if (!this.states.success) {
-        return <div />;
-      }
-    } else if (this.item.classList.includes("warning")) {
-      if (!this.states.warning) {
-        return <div />;
-      }
-    } else if (this.item.classList.includes("error")) {
-      if (!this.states.error) {
-        return <div />;
-      }
-    } else if (!this.states.standard) {
-      return <div />;
-    }
+    if (!categoryIsVisible(this.item, this.states)) return <div />;
 
     let iconClass;
     if (this.item.children.length) {
@@ -206,4 +195,4 @@ function getNavigationItemView(item) {
   return itemViews.get(item) ?? null;
 }
 
-module.exports = { NavigationItem, getNavigationItemView };
+module.exports = { NavigationItem, getNavigationItemView, categoryIsVisible };

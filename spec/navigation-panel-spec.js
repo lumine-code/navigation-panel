@@ -76,6 +76,30 @@ describe("navigation-panel", () => {
     expect(tree.getAllowedLocations()).toEqual(["right", "left"]);
   });
 
+  it("shows an empty body when category filters hide every header and restores their rows", async () => {
+    const tree = mainModule.getNavigationTree();
+    tree.update(
+      [
+        {
+          text: "Chapter",
+          level: 1,
+          classList: [],
+          startPoint: { row: 0, column: 0 },
+          children: [],
+        },
+      ],
+      { instant: true },
+    );
+    tree.categoriesChange(["standard"], false);
+    await pollUntil(
+      () => tree.element.querySelector(".panel-empty-state")?.textContent === "No results",
+    );
+    expect(tree.element.querySelector(".navigation-block")).toBeNull();
+    tree.categoriesChange(["standard"], true);
+    await pollUntil(() => tree.element.querySelector(".navigation-block"));
+    expect(tree.element.querySelector(".panel-empty-state")).toBeNull();
+  });
+
   function createFakeAdapterSetup() {
     const fakeItem = {
       canCopy: () => false,
@@ -1198,6 +1222,13 @@ describe("navigation-panel", () => {
     it("focuses search by mouse for an unsupported grammar", async () => {
       const tree = await closeAndReopenPanel();
       expect(tree.element.textContent).toContain("This grammar is not supported");
+      const empty = tree.element.querySelector(".panel-empty-state");
+      expect(tree.refs.navigationScroller.contains(empty)).toBeTrue();
+      expect(empty.contains(tree.element.querySelector(".navigation-search"))).toBeFalse();
+      expect(empty.contains(tree.element.querySelector(".navigation-desk"))).toBeFalse();
+      expect(empty.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+        tree.element.querySelector(".navigation-search").getBoundingClientRect().bottom,
+      );
 
       clickSearch(tree);
     });
@@ -1218,6 +1249,7 @@ describe("navigation-panel", () => {
         { instant: true },
       );
       await pollUntil(() => tree.element.textContent.includes("No results"));
+      expect(tree.element.querySelector(".panel-empty-state").textContent).toBe("No results");
       tree.focusHeaderList();
 
       clickSearch(tree);

@@ -1,7 +1,7 @@
 /** @jsx etch.dom */
 const etch = require("@lumine-code/etch");
 const { CompositeDisposable, Disposable, Emitter, TextEditor } = require("lumine");
-const { NavigationItem, getNavigationItemView } = require("./navi-item");
+const { NavigationItem, getNavigationItemView, categoryIsVisible } = require("./navi-item");
 
 const FOLLOW_TIME_CONSTANT_MS = 120;
 const FOLLOW_COMPLETION_THRESHOLD = 0.5;
@@ -324,7 +324,7 @@ class NavigationTree {
     let items = this.searches === null ? this.headers : this.searches;
     if (!items) {
       naviList = (
-        <div class="navigation-list">
+        <div class="navigation-list panel-empty-state">
           <background-tips>
             <ul class="centered background-message">
               <li>This grammar is not supported</li>
@@ -332,7 +332,7 @@ class NavigationTree {
           </background-tips>
         </div>
       );
-    } else if (items.length) {
+    } else if (items.some((item) => categoryIsVisible(item, states))) {
       let wspace = this.textWrap || !items ? "unset" : "max-content";
       naviList = (
         <div class="navigation-list" style={{ width: wspace }}>
@@ -351,7 +351,7 @@ class NavigationTree {
       );
     } else {
       naviList = (
-        <div class="navigation-list">
+        <div class="navigation-list panel-empty-state">
           <background-tips>
             <ul class="centered background-message">
               <li>No results</li>
