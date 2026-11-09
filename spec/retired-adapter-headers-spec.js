@@ -69,7 +69,7 @@ describe("Navigation headers after adapter withdrawal", () => {
   it("restores the built-in scanner for an editor after its adapter disappears", async () => {
     const lease = await start(true);
     lease.dispose();
-    await waitForFrames(() => true);
+    await waitForFrames(() => main.builtinEditorAdapter.activeObserver?.isUpdating === false);
     expect(main.adapterManager.active).toBe(main.builtinEditorAdapter);
     expect(main.headers?.[0]?.text).toBe("Built-in heading");
     expect(disposed).toHaveBeenCalledTimes(1);
