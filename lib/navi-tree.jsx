@@ -176,12 +176,14 @@ class NavigationTree {
             this.focusSearch();
           },
         },
-        "navigation-panel:clear": {
-          description: "Empty the search field and scroll back to the selection.",
-          didDispatch: () => {
-            this.clearQuery({ scrollToSelection: true });
+        ...lumine.scrollbars.navigationCommands(() => this.refs.navigationScroller, {
+          "navigation-panel:clear": {
+            description: "Empty the search field and scroll back to the selection.",
+            didDispatch: () => {
+              this.clearQuery({ scrollToSelection: true });
+            },
           },
-        },
+        }),
         "navigation-panel:copy-header-text": {
           description: "Copy the text of the header under the pointer.",
           didDispatch: (event) => {
@@ -189,62 +191,65 @@ class NavigationTree {
           },
         },
       }),
-      lumine.commands.add(".navigation-panel", {
-        "navigation-panel:select-previous-header": {
-          description: "Move the panel's selection to the header above.",
-          didDispatch: () => {
-            this.selectAdjacentHeader(-1);
+      lumine.commands.add(
+        ".navigation-panel",
+        lumine.scrollbars.navigationCommands(() => this.refs.navigationScroller, {
+          "navigation-panel:select-previous-header": {
+            description: "Move the panel's selection to the header above.",
+            didDispatch: () => {
+              this.selectAdjacentHeader(-1);
+            },
           },
-        },
-        "navigation-panel:select-next-header": {
-          description: "Move the panel's selection to the header below.",
-          didDispatch: () => {
-            this.selectAdjacentHeader(1);
+          "navigation-panel:select-next-header": {
+            description: "Move the panel's selection to the header below.",
+            didDispatch: () => {
+              this.selectAdjacentHeader(1);
+            },
           },
-        },
-        "navigation-panel:open-selected-header": {
-          description: "Scroll the editor to the selected header.",
-          didDispatch: () => {
-            this.openSelectedHeader({ clearSearch: false });
+          "navigation-panel:open-selected-header": {
+            description: "Scroll the editor to the selected header.",
+            didDispatch: () => {
+              this.openSelectedHeader({ clearSearch: false });
+            },
           },
-        },
-        "navigation-panel:open-selected-header-clear-search": {
-          description: "Scroll to the selected header and empty the search field.",
-          didDispatch: () => {
-            this.openSelectedHeader({ clearSearch: true });
+          "navigation-panel:open-selected-header-clear-search": {
+            description: "Scroll to the selected header and empty the search field.",
+            didDispatch: () => {
+              this.openSelectedHeader({ clearSearch: true });
+            },
           },
-        },
-        "navigation-panel:open-selected-header-add-cursor": {
-          description: "Add a cursor at the selected header, keeping the others.",
-          didDispatch: () => {
-            this.openSelectedHeader({ addCursor: true });
+          "navigation-panel:open-selected-header-add-cursor": {
+            description: "Add a cursor at the selected header, keeping the others.",
+            didDispatch: () => {
+              this.openSelectedHeader({ addCursor: true });
+            },
           },
-        },
-        "navigation-panel:collapse-selected-header": {
-          description: "Collapse the selected section in the panel.",
-          didDispatch: () => {
-            this.setSelectedHeaderCollapsed(true);
+          "navigation-panel:collapse-selected-header": {
+            description: "Collapse the selected section in the panel.",
+            didDispatch: () => {
+              this.setSelectedHeaderCollapsed(true);
+            },
           },
-        },
-        "navigation-panel:expand-selected-header": {
-          description: "Expand the selected section in the panel.",
-          didDispatch: () => {
-            this.setSelectedHeaderCollapsed(false);
+          "navigation-panel:expand-selected-header": {
+            description: "Expand the selected section in the panel.",
+            didDispatch: () => {
+              this.setSelectedHeaderCollapsed(false);
+            },
           },
-        },
-        "navigation-panel:toggle-selected-prog": {
-          description: "Switch the selected SOFiSTiK program between +PROG and -PROG.",
-          didDispatch: () => {
-            this.toggleSelectedProg();
+          "navigation-panel:toggle-selected-prog": {
+            description: "Switch the selected SOFiSTiK program between +PROG and -PROG.",
+            didDispatch: () => {
+              this.toggleSelectedProg();
+            },
           },
-        },
-        "navigation-panel:toggle-search-focus": {
-          description: "Move focus between the search field and the header tree.",
-          didDispatch: () => {
-            this.toggleSearchFocus();
+          "navigation-panel:toggle-search-focus": {
+            description: "Move focus between the search field and the header tree.",
+            didDispatch: () => {
+              this.toggleSearchFocus();
+            },
           },
-        },
-      }),
+        }),
+      ),
     );
     etch.initialize(this);
     const navigationScroller = this.refs.navigationScroller;
