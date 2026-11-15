@@ -435,9 +435,8 @@ describe("navigation-panel", () => {
   });
 
   describe("visible-header tracking", () => {
-    const { EditorHeaderObserver } = require("../lib/editor-adapter");
-
     function buildObserver({ headers, traceVisible = () => true }) {
+      const { EditorHeaderObserver } = require("../lib/editor-adapter");
       const observer = Object.create(EditorHeaderObserver.prototype);
       observer.editor = {
         getVisibleRowRange: jasmine.createSpy("getVisibleRowRange").and.returnValue([10, 20]),
@@ -453,6 +452,7 @@ describe("navigation-panel", () => {
       observer.traceVisible = traceVisible;
       observer.emit = jasmine.createSpy("emit");
       observer.lastScrollTop = 0;
+      observer.scrollBoundary = null;
       return observer;
     }
 
@@ -540,7 +540,10 @@ describe("navigation-panel", () => {
 
         expect(root.visibility).toBe(0);
         expect(child.visibility).toBe(1);
-        expect(updateVisibility).toHaveBeenCalledOnceWith([root, child], props);
+        expect(updateVisibility).toHaveBeenCalledOnceWith([root, child], {
+          ...props,
+          scrollBoundary: null,
+        });
         expect(update).not.toHaveBeenCalled();
         expect(buildHeaders).not.toHaveBeenCalled();
         expect(markDirty).not.toHaveBeenCalled();

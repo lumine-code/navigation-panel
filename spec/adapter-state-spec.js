@@ -2,7 +2,7 @@ const path = require("node:path");
 const { Disposable } = require("lumine");
 
 describe("incremental adapter tracking", () => {
-  let main, tree, lease;
+  let main, tree, lease, publish;
 
   const initialHeaders = () => [
     {
@@ -39,6 +39,7 @@ describe("incremental adapter tracking", () => {
     const adapter = {
       handlesItem: (candidate) => candidate === item,
       observeHeaders: (_item, callback) => {
+        publish = callback;
         callback(initialHeaders(), { instant: true });
         return new Disposable();
       },
@@ -64,6 +65,146 @@ describe("incremental adapter tracking", () => {
       { path: [0, 0], currentCount: 0, stackCount: 0, visibility: 0 },
       { path: [1], currentCount: 1, stackCount: 1, visibility: 1 },
     ],
+  });
+
+  function setScrollGeometry(scrollTop = 600) {
+    const scroller = tree.refs.navigationScroller;
+    Object.defineProperties(scroller, {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 2000 },
+      scrollTop: { configurable: true, writable: true, value: scrollTop },
+    });
+    for (const block of scroller.querySelectorAll(".navigation-block")) {
+      Object.defineProperty(block, "offsetTop", { configurable: true, value: 500 });
+    }
+    return scroller;
+  }
+
+  function setReducedMotion(matches) {
+    const media = window.matchMedia.bind(window);
+    spyOn(window, "matchMedia").and.callFake((query) =>
+      query === "(prefers-reduced-motion: reduce)" ? { matches } : media(query),
+    );
+  }
+
+  it("tracks an empty service patch to the exact start ahead of visible and current rows", () => {
+    const scroller = setScrollGeometry();
+    publish(null, { ...changes(), instant: true });
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    scroller.scrollTop = 600;
+    const headers = main.headers;
+    const blocks = [...scroller.querySelectorAll(".navigation-block")];
+    const build = spyOn(main.adapterManager, "buildHeaders");
+    const update = spyOn(tree, "update");
+    const filter = spyOn(tree, "filter");
+
+    publish(null, {
+      instant: true,
+      scrollDirection: -25,
+      scrollBoundary: "start",
+      stateChanges: [],
+    });
+
+    expect(scroller.scrollTop).toBe(0);
+    expect(tree.scrollDirection).toBe(-25);
+    expect(main.headers).toBe(headers);
+    expect([...scroller.querySelectorAll(".navigation-block")]).toEqual(blocks);
+    expect(build).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+    expect(filter).not.toHaveBeenCalled();
+  });
+
+  it("preserves the start boundary across state patches until an explicit null clears it", () => {
+    const scroller = setScrollGeometry();
+    publish(null, { instant: true, scrollBoundary: "start", stateChanges: [] });
+    expect(scroller.scrollTop).toBe(0);
+
+    scroller.scrollTop = 600;
+    publish(null, { instant: true, stateChanges: [] });
+    expect(scroller.scrollTop).toBe(0);
+
+    publish(null, { instant: true, scrollBoundary: null, stateChanges: [] });
+    expect(scroller.scrollTop).toBe(415);
+  });
+
+  it("defaults an omitted boundary to normal tracking on a full service snapshot", async () => {
+    const scroller = setScrollGeometry();
+    publish(initialHeaders(), { instant: true, scrollBoundary: "start" });
+    await lumine.views.getNextUpdatePromise();
+    expect(scroller.scrollTop).toBe(0);
+
+    publish(initialHeaders(), { instant: true });
+    await lumine.views.getNextUpdatePromise();
+    expect(scroller.scrollTop).toBe(415);
+  });
+
+  it("animates later start tracking and cancels it on wheel and pointer input", () => {
+    const scroller = setScrollGeometry();
+    setReducedMotion(false);
+    const animate = spyOn(tree, "animateScrollTo").and.callThrough();
+
+    for (const type of ["wheel", "pointerdown"]) {
+      publish(null, { scrollBoundary: "start", stateChanges: [] });
+      expect(animate).toHaveBeenCalledWith(0);
+      expect(scroller.scrollTop).toBe(600);
+      expect(tree.scrollTargetTop).toBe(0);
+      expect(tree.scrollAnimationID).not.toBeNull();
+      scroller.dispatchEvent(new Event(type));
+      expect(tree.scrollAnimationID).toBeNull();
+      expect(tree.scrollTargetTop).toBeNull();
+    }
+  });
+
+  it("positions the start boundary immediately throughout initialization", () => {
+    const scroller = setScrollGeometry();
+    setReducedMotion(false);
+    const animate = spyOn(tree, "animateScrollTo");
+
+    publish(null, { loading: true, scrollBoundary: "start", stateChanges: [] });
+
+    expect(tree.initializing).toBe(true);
+    expect(scroller.scrollTop).toBe(0);
+    expect(animate).not.toHaveBeenCalled();
+  });
+
+  it("positions the start boundary immediately when reduced motion is requested", () => {
+    const scroller = setScrollGeometry();
+    setReducedMotion(true);
+    const animate = spyOn(tree, "animateScrollTo");
+
+    publish(null, { scrollBoundary: "start", stateChanges: [] });
+
+    expect(scroller.scrollTop).toBe(0);
+    expect(animate).not.toHaveBeenCalled();
+    expect(tree.scrollAnimationID).toBeNull();
+  });
+
+  it("clears a retired provider's start boundary before the next source arrives", () => {
+    const scroller = setScrollGeometry();
+    publish(null, { instant: true, scrollBoundary: "start", stateChanges: [] });
+    expect(scroller.scrollTop).toBe(0);
+
+    lease.dispose();
+
+    expect(main.scrollBoundary).toBeNull();
+    expect(tree.scrollBoundary).toBeNull();
+    expect(tree.scrollAnimationID).toBeNull();
+  });
+
+  it("restores the start boundary when recreating the panel without another publication", async () => {
+    publish(null, { instant: true, scrollBoundary: "start", stateChanges: [] });
+    await tree.destroy();
+    tree = main.getNavigationTree();
+    tree.visibility = 1;
+    jasmine.attachToDOM(tree.element);
+    await lumine.views.getNextUpdatePromise();
+    await flushMicrotasks();
+    const scroller = setScrollGeometry();
+    tree.instant = true;
+
+    tree.scrollToCurrent();
+
+    expect(scroller.scrollTop).toBe(0);
   });
 
   it("updates only state classes while keeping the outline and its DOM identities", () => {

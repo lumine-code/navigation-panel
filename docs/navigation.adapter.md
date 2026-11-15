@@ -33,11 +33,12 @@ type NavigationAdapter = {
   observeHeaders(
     item: object,
     callback: (
-      headers: Header[],
+      headers: Header[] | null,
       options?: {
         loading?: boolean;
         instant?: boolean;
         scrollDirection?: number;
+        scrollBoundary?: "start" | null;
         stateChanges?: Array<{
           path: number[];
           currentCount?: number;
@@ -127,6 +128,10 @@ An adapter that loads an outline in stages sends `{ loading: true }` with its fi
 The final callback may use `stateChanges: []` when only the loading state changed. Initialization still waits for pending outline rendering and automatic expansion. Switching items or retiring a provider cancels the previous observation's initialization; its late results cannot move the new outline.
 
 When only current, ancestor or visible state changes, reuse the current header tree and pass `stateChanges`. Each change names an entry by its zero-based `path` through the nested arrays and supplies the changed state fields. The panel updates those rows and their ancestors without rebuilding the outline or its search results. Publish a full tree when its hierarchy or other metadata changes. A numeric `scrollDirection` can carry the source viewport's scroll delta so tracking follows its leading or trailing visible heading. The panel honors reduced-motion preferences and cancels its animation when the user scrolls or presses the pointer in the panel.
+
+Set `scrollBoundary: "start"` when the source viewport lies entirely before the first outline header. This scrolls the panel to exactly `0`, taking precedence over visible and current entries; the current entry can still follow a cursor elsewhere in the document. Send `scrollBoundary: null` to resume normal heading tracking when the viewport reaches the first header. The boundary follows the same initialization, `instant` and reduced-motion rules as heading tracking.
+
+A full header snapshot defaults `scrollBoundary` to `null` when omitted. An incremental `stateChanges` publication preserves the previous boundary when omitted and clears it only with an explicit `null`. Pass `null` for the headers argument with incremental changes. An empty `stateChanges: []` still updates scroll metadata and follows the viewport without rebuilding any rows, so an adapter can report boundary or direction changes even when no header state changed. Switching pane items or providers resets the boundary.
 
 An adapter that is registered while its item is already active is **subscribed immediately**, so a package activating late still populates the panel without the user switching tabs.
 

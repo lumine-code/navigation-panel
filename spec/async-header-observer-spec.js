@@ -81,7 +81,7 @@ describe("Asynchronous navigation headings", () => {
     expect(markers.refresh.calls.count()).toBe(1);
     expect(markers.refresh).toHaveBeenCalledWith(editor, latest);
     expect(publish.calls.count()).toBe(1);
-    expect(publish).toHaveBeenCalledWith(latest, { instant: true });
+    expect(publish).toHaveBeenCalledWith(latest, { instant: true, scrollBoundary: null });
   });
 
   it("resumes after None without waiting for an obsolete scanner to settle", async () => {

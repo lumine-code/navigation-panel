@@ -40,6 +40,7 @@ class NavigationTree {
     this.scrollVirtualTop = null;
     this.scrollLastFrameTime = null;
     this.scrollDirection = 0;
+    this.scrollBoundary = null;
     this.selectedNavigationIndex = null;
     this.navigationSelectionActive = false;
     this.resetSelectedHeaderTimer = null;
@@ -446,6 +447,9 @@ class NavigationTree {
       if (Object.hasOwn(props, "scrollDirection")) {
         this.scrollDirection = props.scrollDirection;
       }
+      if (Object.hasOwn(props, "scrollBoundary")) {
+        this.scrollBoundary = props.scrollBoundary;
+      }
     }
     return etch.update(this);
   }
@@ -456,6 +460,7 @@ class NavigationTree {
     this.initializing = false;
     this.instant = false;
     this.scrollDirection = 0;
+    this.scrollBoundary = null;
     this.cancelScrollAnimation();
   }
 
@@ -479,6 +484,9 @@ class NavigationTree {
   updateVisibility(items, props = {}) {
     if (Object.hasOwn(props, "scrollDirection")) {
       this.scrollDirection = props.scrollDirection;
+    }
+    if (Object.hasOwn(props, "scrollBoundary")) {
+      this.scrollBoundary = props.scrollBoundary;
     }
     if (this.searches !== null) {
       const affectedItems = new Set(items);
@@ -527,6 +535,9 @@ class NavigationTree {
     if (!scroller) {
       return;
     }
+    if (this.scrollBoundary === "start") {
+      return this.scrollToOffset(0);
+    }
     let element;
     let elements = scroller.getElementsByClassName("navigation-block visible");
     if (elements.length > 0) {
@@ -545,12 +556,6 @@ class NavigationTree {
   }
 
   scrollToElement(element) {
-    if (this.instant === null && !this.initializing) {
-      this.cancelScrollAnimation();
-      this.instant = false;
-      return; // do not scroll
-    }
-
     let container = this.refs.navigationScroller;
     if (!container) {
       return;
@@ -579,6 +584,18 @@ class NavigationTree {
       targetScrollTop = elementTop - limitBottom;
     }
 
+    return this.scrollToOffset(targetScrollTop);
+  }
+
+  scrollToOffset(targetScrollTop) {
+    if (this.instant === null && !this.initializing) {
+      this.cancelScrollAnimation();
+      this.instant = false;
+      return;
+    }
+    const container = this.refs.navigationScroller;
+    if (!container) return;
+
     // If instant mode, use direct scroll without animation
     if (
       this.initializing ||
@@ -587,7 +604,7 @@ class NavigationTree {
     ) {
       this.instant = false;
       this.cancelScrollAnimation();
-      container.scrollTop = targetScrollTop;
+      container.scrollTop = clampScrollTop(container, targetScrollTop);
       return;
     }
 
