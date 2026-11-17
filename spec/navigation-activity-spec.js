@@ -84,8 +84,6 @@ describe("Navigation Panel command activity", () => {
     ["open-selected-header", "openSelectedHeader"],
     ["open-selected-header-clear-search", "openSelectedHeader"],
     ["open-selected-header-add-cursor", "openSelectedHeader"],
-    ["toggle-selected-prog", "toggleSelectedProg"],
-    ["toggle-search-focus", "toggleSearchFocus"],
     ["clear", "clearQuery"],
   ]) {
     it(`reports handled ${command} through its command boundary`, () => {
@@ -96,6 +94,24 @@ describe("Navigation Panel command activity", () => {
       expect(controller.activity.active).toBeTrue();
     });
   }
+
+  it("keeps switching focus between the search field and header list quiet", async () => {
+    tree.searchBar = true;
+    await tree.update(headers, { instant: true });
+    tree.focusHeaderList();
+    await lumine.commands.dispatch(
+      tree.refs.navigationScroller,
+      "navigation-panel:toggle-search-focus",
+    );
+    expect(tree.refs.searchEditor.element.contains(document.activeElement)).toBeTrue();
+    await lumine.commands.dispatch(
+      tree.refs.searchEditor.element,
+      "navigation-panel:toggle-search-focus",
+    );
+    expect(document.activeElement).toBe(tree.refs.navigationScroller);
+    expect(reveal).not.toHaveBeenCalled();
+    expect(controller.activity.active).toBeFalse();
+  });
 
   it("does not turn ordinary search typing or a non-navigation command into activity", async () => {
     tree.focusSearch();

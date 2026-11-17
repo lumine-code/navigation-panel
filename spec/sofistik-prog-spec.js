@@ -61,6 +61,17 @@ describe("SOFiSTiK program switching in the outline", () => {
     expect(editor.lineTextForBufferRow(0)).toBe("  -PrOg aqua urs:1");
   });
 
+  it("does not report navigation while editing the selected program", async () => {
+    await showPrograms();
+    lumine.commands.dispatch(tree.element, "navigation-panel:select-next-header");
+    const reveal = spyOn(lumine.scrollbars, "reveal");
+    pressSpace();
+    expect(editor.lineTextForBufferRow(0)).toBe("  -PrOg aqua urs:1");
+    pressSpace();
+    expect(editor.lineTextForBufferRow(0)).toBe("  +PrOg aqua urs:1");
+    expect(reveal).not.toHaveBeenCalled();
+  });
+
   it("leaves Space available for text input in the search field", async () => {
     await showPrograms();
     tree.focusSearch();

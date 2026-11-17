@@ -192,9 +192,8 @@ class NavigationTree {
           },
         },
       }),
-      lumine.commands.add(
-        ".navigation-panel",
-        lumine.scrollbars.navigationCommands(() => this.refs.navigationScroller, {
+      lumine.commands.add(".navigation-panel", {
+        ...lumine.scrollbars.navigationCommands(() => this.refs.navigationScroller, {
           "navigation-panel:select-previous-header": {
             description: "Move the panel's selection to the header above.",
             didDispatch: () => {
@@ -237,20 +236,20 @@ class NavigationTree {
               this.setSelectedHeaderCollapsed(false);
             },
           },
-          "navigation-panel:toggle-selected-prog": {
-            description: "Switch the selected SOFiSTiK program between +PROG and -PROG.",
-            didDispatch: () => {
-              this.toggleSelectedProg();
-            },
-          },
-          "navigation-panel:toggle-search-focus": {
-            description: "Move focus between the search field and the header tree.",
-            didDispatch: () => {
-              this.toggleSearchFocus();
-            },
-          },
         }),
-      ),
+        "navigation-panel:toggle-selected-prog": {
+          description: "Switch the selected SOFiSTiK program between +PROG and -PROG.",
+          didDispatch: () => {
+            this.toggleSelectedProg();
+          },
+        },
+        "navigation-panel:toggle-search-focus": {
+          description: "Move focus between the search field and the header tree.",
+          didDispatch: () => {
+            this.toggleSearchFocus();
+          },
+        },
+      }),
     );
     etch.initialize(this);
     const navigationScroller = this.refs.navigationScroller;
