@@ -363,7 +363,7 @@ describe("navigation-panel", () => {
       expect(updateHeaders.calls.count()).toBe(1);
     });
 
-    it("ignores horizontal cursor bursts and publishes vertical ones once", async () => {
+    it("ignores cursor bursts within sections and publishes section changes once", async () => {
       editor.setSelectedBufferRanges(cursorRanges());
       await Promise.resolve();
       const observer = mainModule.builtinEditorAdapter.activeObserver;
@@ -381,9 +381,14 @@ describe("navigation-panel", () => {
 
       editor.selectDown();
       await Promise.resolve();
-      expect(updateHeaders.calls.count()).toBe(1);
+      expect(updateHeaders).not.toHaveBeenCalled();
       expect(clearCursorItems.calls.count()).toBe(1000);
       expect(findCursorItems.calls.count()).toBe(1000);
+      expect(editor.getCursors().length).toBe(1000);
+
+      editor.selectDown();
+      await Promise.resolve();
+      expect(updateHeaders.calls.count()).toBe(1);
       expect(editor.getCursors().length).toBe(1000);
     });
   });

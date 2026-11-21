@@ -84,6 +84,38 @@ describe("Asynchronous navigation headings", () => {
     expect(publish).toHaveBeenCalledWith(latest, { instant: true, scrollBoundary: null });
   });
 
+  it("publishes the complete scan before cursor state triggered by marker refresh", async () => {
+    editor.setText("first\nbody\nsecond");
+    const headers = [
+      {
+        text: "First",
+        children: [],
+        startPoint: { row: 0, column: 0 },
+        currentCount: 0,
+        stackCount: 0,
+      },
+      {
+        text: "Second",
+        children: [],
+        startPoint: { row: 2, column: 0 },
+        currentCount: 0,
+        stackCount: 0,
+      },
+    ];
+    observer.scanner = { getHeaders: () => headers };
+    markers.refresh.and.callFake(() => {
+      editor.setCursorBufferPosition([2, 0], { autoscroll: false });
+    });
+    await observer.update({ instant: true });
+    await flushMicrotasks();
+
+    expect(publish).toHaveBeenCalledTimes(1);
+    expect(publish.calls.first().args[0]).toBe(headers);
+    expect(publish.calls.first().args[1].stateChanges).toBeUndefined();
+    expect(headers[0].currentCount).toBe(0);
+    expect(headers[1].currentCount).toBe(1);
+  });
+
   it("resumes after None without waiting for an obsolete scanner to settle", async () => {
     await lumine.packages.activatePackage("language-javascript");
     const grammar = lumine.grammars.grammarForScopeName("source.js");
