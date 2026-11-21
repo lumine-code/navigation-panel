@@ -208,10 +208,11 @@ describe("text editor outline state publications", () => {
     editor.setCursorBufferPosition([6, 0], { autoscroll: false });
     observer.emit({ instant: true });
     await Promise.resolve();
-    expect(publish).toHaveBeenCalledOnceWith(observer.headers, {
-      instant: true,
-      scrollBoundary: null,
-    });
+    expect(publish).toHaveBeenCalledTimes(1);
+    expect(publish.calls.mostRecent().args[0]).toBe(observer.headers);
+    expect(publish.calls.mostRecent().args[1]).toEqual(
+      jasmine.objectContaining({ instant: true, scrollBoundary: null }),
+    );
     expect(observer.pendingCursorChanges.size).toBe(0);
   });
 

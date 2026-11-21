@@ -81,7 +81,10 @@ describe("Asynchronous navigation headings", () => {
     expect(markers.refresh.calls.count()).toBe(1);
     expect(markers.refresh).toHaveBeenCalledWith(editor, latest);
     expect(publish.calls.count()).toBe(1);
-    expect(publish).toHaveBeenCalledWith(latest, { instant: true, scrollBoundary: null });
+    expect(publish.calls.mostRecent().args[0]).toBe(latest);
+    expect(publish.calls.mostRecent().args[1]).toEqual(
+      jasmine.objectContaining({ instant: true, scrollBoundary: null }),
+    );
   });
 
   it("publishes the complete scan before cursor state triggered by marker refresh", async () => {

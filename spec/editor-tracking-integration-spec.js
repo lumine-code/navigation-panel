@@ -86,6 +86,13 @@ describe("built-in editor tracking work", () => {
     expect(main.headers[0].stackCount).toBe(0);
     expect(main.headers[1].stackCount).toBe(1);
     expect(main.headers[1].children[0].currentCount).toBe(1);
+    await conditionPromise(
+      () =>
+        tree.element
+          .querySelector(".navigation-block.current")
+          ?.textContent.includes("Second child"),
+      "current section classes in the panel",
+    );
     expect(tree.element.querySelector(".navigation-block.current")?.textContent).toContain(
       "Second child",
     );
