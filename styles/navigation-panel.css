@@ -25,12 +25,11 @@
       right: calc(0.375em + 4px);
     }
 
-    &:hover .icon-remove-close {
-      display: block;
+    &:is(:hover, :focus-within) .icon-remove-close {
+      display: inline-grid;
     }
 
-    &:hover .icon-remove-close:hover {
-      cursor: default;
+    .icon-remove-close:is(:hover, :focus-visible) {
       color: var(--text-color-highlight);
     }
 

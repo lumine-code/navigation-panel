@@ -317,8 +317,10 @@ class NavigationTree {
           mini: true,
           placeholderText: "Search...",
         })}
-        <div
-          class="icon-remove-close"
+        <button
+          type="button"
+          class="icon-button icon-button-no-scale icon icon-remove-close"
+          attributes={{ "aria-label": "Clear navigation search" }}
           on={{
             mousedown: this.didMouseDownSearchAction,
             click: this.clearQuery,
