@@ -23,14 +23,25 @@
       position: absolute;
       top: calc(0.375em + 4px);
       right: calc(0.375em + 4px);
+      appearance: none;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      cursor: default;
     }
 
     &:is(:hover, :focus-within) .icon-remove-close {
-      display: inline-grid;
+      display: block;
     }
 
     .icon-remove-close:is(:hover, :focus-visible) {
       color: var(--text-color-highlight);
+    }
+
+    .icon-remove-close:focus-visible {
+      outline: 1px solid var(--accent-indicator-color);
     }
 
     &:empty {

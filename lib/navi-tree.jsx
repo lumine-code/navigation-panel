@@ -319,7 +319,7 @@ class NavigationTree {
         })}
         <button
           type="button"
-          class="icon-button icon-button-no-scale icon icon-remove-close"
+          class="icon-remove-close native-key-bindings"
           attributes={{ "aria-label": "Clear navigation search" }}
           on={{
             mousedown: this.didMouseDownSearchAction,
